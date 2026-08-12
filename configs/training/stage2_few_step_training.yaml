@@ -1,20 +1,11 @@
-# Few-step distillation with the ViGeo depth backend, warm-started from the adapter750 checkpoint.
-#
-# Sibling of post_distill.yaml: the ONLY difference is transformer_model_name_or_path (plus the
-# output_dir / wandb_name that keep the runs apart), so the three can be compared as one sweep over the
-# student init. Every training / validation knob is identical.
-#
-# Requires the ViGeo weights in models/ViGeo1.1 (gitignored; the source is vendored at
-# evoke/third_party/vigeo). The config validator checks for them at startup.
-
-output_dir: models/train/stage3_post_distillation_warm750
+output_dir: models/train/stage2_few_step_training
 logging_dir: logs
 seed: 49
 
 
 report_to:
   tracker_name: evoke
-  wandb_name: stage3_post_vigeo_warm750
+  wandb_name: stage3
   report_to: wandb
 
 
@@ -40,12 +31,7 @@ data_config:
 
 model_config:
   pretrained_model_name_or_path: models/evoke-base
-  # Student init: evoke_teacher_warm750, a full fp32 merge of
-  #   long-dmd-regression .../dmdfinal_v3_cs9s1_adapter750_g6full_24g_v2/checkpoint-300
-  # onto dmd_gan_stage0warp_lora32_stu2k/checkpoint-3000-merged (rank 128 LoRA, merged with --dtype fp32).
-  # Only transformer/ is present, so vae / scheduler / text_encoder come from
-  # pretrained_model_name_or_path below.
-  transformer_model_name_or_path: models/evoke/stage3_long_distillation_warm750
+  transformer_model_name_or_path: models/evoke/stage2_few_step_training
   subfolder: "transformer"
   real_score_model_name_or_path: models/evoke/stage1_camera_control
   load_checkpoints_custom: false
@@ -53,8 +39,8 @@ model_config:
   enable_slicing: false
   enable_tiling: false
   upcast_vae: true
-  lora_rank: 16
-  lora_alpha: 16.0
+  lora_rank: 32
+  lora_alpha: 32.0
   lora_dropout: 0.0
   lora_layers: "all-linear"
   lora_exclude_modules:
@@ -86,24 +72,26 @@ model_config:
     cloud_warp:
       enabled: true
       # Depth-estimation backend behind the shared FrameBank / render pipeline.
-      #   da3 (default) = DepthAnything3, pose-conditioned: GT extrinsics + intrinsics are network inputs.
-      #   vigeo         = ViGeo, image-only; up-to-scale depth rescaled by the Umeyama scale against the
-      #                   GT trajectory. Source is vendored in-repo (evoke/third_party/vigeo); only the
-      #                   weights need provisioning into models/ViGeo1.1 (gitignored).
+      #   vigeo (default) = ViGeo, image-only: it takes no pose or intrinsics input, so its depth is
+      #                     up-to-scale and gets rescaled by the Umeyama scale against the GT trajectory.
+      #                     Source is vendored in-repo (evoke/third_party/vigeo); only the weights need
+      #                     provisioning into models/ViGeo1.1 (gitignored).
+      #   da3             = DepthAnything3, pose-conditioned (GT extrinsics + intrinsics are network
+      #                     inputs). To go back, set backend: da3 and uncomment the da3 block below.
       # Orthogonal to render_mode below, which selects the renderer, not the geometry model.
       backend: vigeo
-      da3:                        # ignored while backend=vigeo; kept so switching back is one key
-        ckpt_path: models/DA3
-        process_res: 644
       vigeo:
         weights: models/ViGeo1.1
-        process_res: 644          # same as da3 above, so an A/B differs only in the geometry model
+        process_res: 644
         mode: chunk               # hold the kv-cache across ingest windows: one stream, one scale
         scale_mode: anchor        # lock the median Umeyama scale of the first anchor_windows
         anchor_windows: 4
         cache_keep_frames: 6
-        intr_source: gt           # GT K rescaled to the output resolution, exactly as da3 does
+        intr_source: gt           # GT K rescaled to the output resolution
         conf_transform: exp       # ViGeo conf is raw logits; exp maps it positive
+      # da3:
+      #   ckpt_path: models/DA3
+      #   process_res: 644
       update_frames_per_chunk: 12
       render_mode: backward_zbuf
       bw_fill_iters: 12
@@ -263,20 +251,6 @@ training_config:
   dmd_denoising_step_list: [1000, 666, 333]
   num_critic_input_frames: 9
   dmd_timestep_shift: 5.0
-  # Oversample the stage0 band when scoring, because camera control is decided by the coarse structure
-  # laid down at high t -- and stage0 (actual t 666-999) is the only pyramid stage the warp is injected
-  # into (warp_stage0_only above; pipeline_evoke strips the warp segment for i_s>0).
-  #
-  # With probability p this step's whole scoring band moves to [highband_min, highband_max], which
-  # default to 666/1000 = exactly stage0's band; otherwise the full band is used. That keeps the low
-  # band covered, unlike a hard dmd_score_timestep_min floor, which zeroes out t<334 even at its
-  # mildest setting. Measured actual-t shares under shift 5 (p -> stage0 / stage1 / below):
-  #   0.0 -> 71.7% / 19.4% / 8.9%   (default, already high-noise heavy because of the shift)
-  #   0.3 -> 80.2% / 13.6% / 6.3%   (here: a clear bias with detail supervision retained)
-  #   0.5 -> 85.8% /  9.7% / 4.5%
-  #   1.0 ->  100% /     0 /    0   (equivalent to dmd_score_timestep_min: 285; too strong)
-  # Each rank rolls independently, so the effective granularity is finer than one draw per step.
-  dmd_score_highband_prob: 0.3
   dmd_last_step_only: false
   dmd_teacher_forcing: false
   fake_guidance_scale: 0.0

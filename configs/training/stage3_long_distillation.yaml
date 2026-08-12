@@ -43,7 +43,7 @@ data_config:
 model_config:
   # student
   pretrained_model_name_or_path: models/evoke-base
-  transformer_model_name_or_path: models/evoke/stage2_few_step_training
+  transformer_model_name_or_path: models/evoke/stage3_long_distillation
   subfolder: transformer
   load_checkpoints_custom: false
   load_dcp: false

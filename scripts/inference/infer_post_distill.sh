@@ -10,7 +10,7 @@
 #   Both are properties of the released weights, not tuning knobs. Raising the step count
 #   does not improve this model; it was distilled to be sampled exactly this way.
 #
-#   Every knob below mirrors the training config "configs/training/stage3/post_distill.yaml".
+#   Every knob below mirrors the training config "configs/training/stage3_post_distillation.yaml".
 #   Inference and training MUST agree on the warp / attention recipe: a mismatch
 #   silently degrades image quality, it is not just a speed difference.
 #
@@ -110,7 +110,7 @@ if [ "$MODE" = "segment" ]; then
 fi
 
 # This model was trained with v2v conditioning only (geo_condition_{i2v,t2v}_ratio = 0.0 in
-# configs/training/stage3/post_distill.yaml), so i2v / t2v below are ZERO-SHOT extrapolation, not a trained capability.
+# configs/training/stage3_post_distillation.yaml), so i2v / t2v below are ZERO-SHOT extrapolation, not a trained capability.
 if [ "$TAG" != "v2v" ]; then
   echo "[post_distill] WARNING: MODE=$TAG is zero-shot for this model (trained on v2v conditioning only)."
 fi
@@ -142,7 +142,7 @@ export GUIDANCE_SCALE=${GUIDANCE_SCALE:-1.0}   # CFG off: distillation removed t
 # default/default_warm0 decode each chunk head as an I-frame -> ~4.5x flicker at every boundary here.
 export VAE_DECODE_TYPE=${VAE_DECODE_TYPE:-persistent}
 
-# -- mirrors longvideo_30s_distill.yaml (same warp recipe as few-step); this exact
+# -- mirrors stage3_long_distillation.yaml (same warp recipe as few-step); this exact
 #    combination has been run end-to-end at 120s and 60min --
 export IS_STAGE2=1 STAGE2_NUM_STAGES=3 STAGE2_STEPS="1 1 1"
 export NUM_INFERENCE_STEPS=3

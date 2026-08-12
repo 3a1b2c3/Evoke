@@ -1,8 +1,10 @@
 #!/bin/bash
 # ════════════════════════════════════════════════════════════════════════════
-# Stage-2 — NaViT pyramid (coarse-to-fine) training
-#   config: configs/training/stage2/stage2.yaml
-#   Default scale: 1 node x 8 GPUs
+# Stage 3a -- 30s long-video DMD distillation (dual-expert teacher, N=20 full window)
+#   produces: models/train/stage3_long_distillation   (release it as models/evoke/stage3_long_distillation)
+#   init    : models/evoke/stage3_long_distillation
+#   config  : configs/training/stage3_long_distillation.yaml
+#   Default scale: 6 nodes x 8 GPUs = 48 processes
 #   Multi-node: the platform injects RANK / MASTER_ADDR / MASTER_PORT. The node and process
 #     counts are fixed in the accelerate yaml, because CLI overrides are unreliable under the
 #     DEEPSPEED distributed_type -- change ACCELERATE_CONFIG rather than passing
@@ -39,13 +41,20 @@ MACHINE_RANK=${RANK:-0}
 MASTER_ADDR_ARG=${MASTER_ADDR:-127.0.0.1}
 MASTER_PORT_ARG=${MASTER_PORT:-29500}
 
-ACCELERATE_CONFIG=${ACCELERATE_CONFIG:-configs/accelerate/zero2_1x8.yaml}
-TRAINING_CONFIG=${TRAINING_CONFIG:-configs/training/stage2/stage2.yaml}
+ACCELERATE_CONFIG=${ACCELERATE_CONFIG:-configs/accelerate/zero2_6x8.yaml}
+TRAINING_CONFIG=${TRAINING_CONFIG:-configs/training/stage3_long_distillation.yaml}
+
+# Topology constraint: world size must be a multiple of sf_critic_sp_world_size (=8), and one SP
+#   group is one node.
+# Diagnostics, off by default for long runs: SF_PROFILE=1 prints per-step stage timings,
+#   SF_VRAM_PROBE=1 prints the peak memory of each step.
+export SF_PROFILE=${SF_PROFILE:-0}
+export SF_VRAM_PROBE=${SF_VRAM_PROBE:-0}
 
 mkdir -p logs
-echo "[stage2] rank=$MACHINE_RANK master=$MASTER_ADDR_ARG:$MASTER_PORT_ARG"
-echo "[stage2] accelerate=$ACCELERATE_CONFIG"
-echo "[stage2] training=$TRAINING_CONFIG"
+echo "[stage3_long_distillation] rank=$MACHINE_RANK master=$MASTER_ADDR_ARG:$MASTER_PORT_ARG"
+echo "[stage3_long_distillation] accelerate=$ACCELERATE_CONFIG"
+echo "[stage3_long_distillation] training=$TRAINING_CONFIG"
 
 accelerate launch \
   --config_file "$ACCELERATE_CONFIG" \
@@ -54,4 +63,4 @@ accelerate launch \
   --main_process_port "$MASTER_PORT_ARG" \
   train_evoke.py \
   --config "$TRAINING_CONFIG" \
-  2>&1 | tee "logs/stage2_$(date +%Y%m%d_%H%M%S)_rank${MACHINE_RANK}.log"
+  2>&1 | tee "logs/stage3_long_distillation_$(date +%Y%m%d_%H%M%S)_rank${MACHINE_RANK}.log"

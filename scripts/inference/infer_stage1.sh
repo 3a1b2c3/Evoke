@@ -4,7 +4,7 @@
 #   Weights : models/evoke/stage1_camera_control  (holds transformer/; loaded with subfolder="transformer")
 #   Engine  : scripts/inference/infer_batch.py -> scripts/inference/infer_single.py
 #
-#   Every knob below mirrors the training config "configs/training/stage1/stage1.yaml".
+#   Every knob below mirrors the training config "configs/training/stage1_camera_control.yaml".
 #   Inference and training MUST agree on the warp / attention recipe: a mismatch
 #   silently degrades image quality, it is not just a speed difference.
 #
@@ -102,11 +102,11 @@ export HEIGHT=${HEIGHT:-384} WIDTH=${WIDTH:-640} FPS=${FPS:-24}
 export GUIDANCE_SCALE=${GUIDANCE_SCALE:-5.0}
 export VAE_DECODE_TYPE=${VAE_DECODE_TYPE:-persistent}
 
-# -- mirrors stage1.yaml: no pyramid / restrict+kv-cache / despeckle ON --
+# -- mirrors stage1_camera_control.yaml: no pyramid / restrict+kv-cache / despeckle ON --
 export IS_STAGE2=0                     # stage1 has no NaViT pyramid
 export NUM_INFERENCE_STEPS=${NUM_INFERENCE_STEPS:-50}  # this model is NOT distilled: sample it as a
                                        #   normal multi-step diffusion model. Do NOT copy
-                                       #   validation_config.num_inference_steps (=8) from stage1.yaml:
+                                       #   validation_config.num_inference_steps (=8) from stage1_camera_control.yaml:
                                        #   that is the cheap in-training sanity check, not a sampling
                                        #   recipe, and 8 steps with CFG off visibly smears the result.
 export RESTRICT=1                      # training_config.restrict_self_attn=true -> required at inference

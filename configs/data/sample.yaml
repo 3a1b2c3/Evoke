@@ -3,7 +3,7 @@
 # The clip is `examples/data/walking_tour_60s.*` -- 60 s, 1800 frames @30 fps, 1280x720, with a
 # per-frame vipe pose track (cam_c2w + intrinsics, 1800 frames) and a k25 caption file. Resampled to
 # the 24 fps target that gives 1439 latent-source frames, which clears the longest `num_frames` any
-# config here asks for (753 in longvideo_30s_distill.yaml).
+# config here asks for (753 in stage3_long_distillation.yaml).
 #
 # This is enough to check that a recipe trains -- it is one clip, so it will overfit immediately and
 # tells you nothing about quality. For a real run point `data_yaml_path` at `mix_4src.yaml` (stage 1/2)
@@ -11,7 +11,7 @@
 # mix, the per-source path quirks and the tuned sampling ratios.
 #
 # caption_key: overall.description -- the whole-clip prompt. Use sample_segprompts.yaml for the
-# segmented-prompt variant that longvideo_30s_distill.yaml needs.
+# segmented-prompt variant that stage3_long_distillation.yaml needs.
 
 defaults:
   # short clips that cannot supply num_frames are skipped and resampled; with a single-clip source

@@ -1,15 +1,19 @@
-output_dir: models/train/stage2_few_step_training
+output_dir: models/train/stage1_camera_control
 logging_dir: logs
-seed: 49
+seed: 44
 
 
 report_to:
   tracker_name: evoke
-  wandb_name: stage3
+  wandb_name: stage1
   report_to: wandb
 
 
 data_config:
+  use_stage1_dataset: true
+  use_stage3_dataset: false
+  use_multi_dataset: true
+  data_yaml_path: configs/data/sample.yaml   # bundled single-clip sample; swap in configs/data/mix_4src.yaml for a real run
   use_shuffle: true
   pin_memory: true
   persistent_workers: false
@@ -21,36 +25,27 @@ data_config:
   prefetch_factor: 1
   caption_dropout_p: 0
   id_token: ""
-  use_stage1_dataset: true
-  use_multi_dataset: true
-  data_yaml_path: configs/data/sample.yaml   # bundled single-clip sample; swap in configs/data/mix_3src_pose.yaml for a real run
-  num_frames: 141
+  num_frames: 357
   target_fps: 24
-  use_stage3_dataset: false
 
 
 model_config:
   pretrained_model_name_or_path: models/evoke-base
-  transformer_model_name_or_path: models/evoke-distilled
+  transformer_model_name_or_path: models/evoke/stage1_camera_control
   subfolder: "transformer"
-  real_score_model_name_or_path: models/evoke/stage1_camera_control
   load_checkpoints_custom: false
+  load_model_path: null
   load_dcp: false
   enable_slicing: false
   enable_tiling: false
-  upcast_vae: true
-  lora_rank: 32
-  lora_alpha: 32.0
+  lora_rank: 256
+  lora_alpha: 256.0
   lora_dropout: 0.0
   lora_layers: "all-linear"
   lora_exclude_modules:
     - down
     - up
-    - warp_residual_mlp
   train_norm_layers: false
-  critic_lora_rank: 128
-  critic_lora_alpha: 128.0
-  critic_lora_dropout: 0.0
 
   geometric_state:
     enabled: true
@@ -65,10 +60,7 @@ model_config:
     warp_keep_clean_anchor: false
     geo_invisible_history_noise: false
     geo_warp_plucker_enabled: false
-    warp_rope_noise_center_align: false
-    warp_stage0_only: true
-    warp_error_inject_enabled: false
-    error_inject_prob: 0.0
+
     cloud_warp:
       enabled: true
       # Depth-estimation backend behind the shared FrameBank / render pipeline.
@@ -94,7 +86,11 @@ model_config:
       #   process_res: 644
       update_frames_per_chunk: 12
       render_mode: backward_zbuf
-      bw_fill_iters: 12
+      render_mode_mix_prob_zbuf: 0.2
+      zbuf_despeckle: true
+      zbuf_despeckle_ksize: 3
+      zbuf_despeckle_fill_iters: 4
+      bw_fill_iters: 3
       nsrc: 8
       nearby_window: 16
       multisrc_splat: 1
@@ -110,11 +106,37 @@ model_config:
         probs:  uniform
 
     short_tier_noise:
-      enabled: false
+      enabled: true
+      sigma_min: 0.0
+      sigma_max: 0.135
+      target_tiers: [prefix, prev_short, mid, long]
+      prefix_sigma_max: 0.0
+      prev_short_sigma_max: 0.135
+      mid_long_sigma_max: 0.1
+      apply_at_inference: false
+      sigma_lock_per_rollout: false
+
     warp_token_drop:
-      enabled: false
+      enabled: true
+      mode_probs: [0.5, 0.1, 0.2, 0.2]
+      frame_drop_ratio: 0.5
+      patch_drop_ratio: 0.3
+
     warp_saturation_corrupt:
-      enabled: false
+      enabled: true
+      step_prob: 0.6
+      frame_prob: 0.6
+      ratio_min: 0.5
+      ratio_max: 1.4
+      target_tiers: [warp, prev_short, mid, long]
+
+    warp_pose_jitter:
+      enabled: true
+      prob: 0.5
+      yaw_deg_range: [0.5, 2.0]
+      pitch_deg_range: [0.5, 2.0]
+      roll_deg_range: [0.0, 0.5]
+      trans_frac_range: [0.0, 0.0]
 
   camera_control:
     enabled: false
@@ -147,40 +169,41 @@ validation_config:
   validation_pose_max_rotation_deg: 0.0
   use_geometric_state: true
   validation_guidance_scale: 1.0
-  validation_latent_window_size: [9]
+  validation_latent_window_size:
+    - 9
   num_validation_videos: 1
-  num_inference_steps: 3
-  use_dynamic_shifting: false
+  num_inference_steps: 8
+  use_dynamic_shifting: true
   time_shift_type: "exponential"
-  stage2_simulated_inference_steps: [1, 1, 1]
 
 
 training_config:
   trainable_models: [lora]
+  freeze_cross_attn: true
+  use_raw_sink_frames: false
   use_geometric_state: true
 
-  max_train_steps: 1000000
+  max_train_steps: 1000000000
   train_batch_size: 1
   gradient_accumulation_steps: 2
-  learning_rate: 2.0e-06
+  learning_rate: 5e-5
   lr_scheduler: "constant"
-  lr_warmup_steps: 500
+  lr_warmup_steps: 200
   optimizer: "adamw"
-  adam_beta1: 0.0
+  adam_beta1: 0.9
   adam_beta2: 0.999
-  adam_weight_decay: 1e-03
+  adam_weight_decay: 1e-04
   adam_epsilon: 1e-08
-  max_grad_norm: 10.0
+  max_grad_norm: 1.0
 
   mixed_precision: "bf16"
   allow_tf32: false
   gradient_checkpointing: true
   offload: false
   upcast_before_saving: false
+  enable_xformers_memory_efficient_attention: false
+  enable_npu_flash_attention: false
   vae_decode_type: "persistent"
-  dmd_is_low_vram_mode: false
-  is_gan_low_vram_mode: true
-  dmd_is_offload_grad: false
 
   checkpointing_steps: 200
   checkpoints_total_limit: 10
@@ -189,11 +212,17 @@ training_config:
 
   use_ema: false
   use_ema_validation: false
-  ema_decay: 0.99
-  ema_start_step: 750
+  ema_decay: 0.999
+  ema_start_step: 250
+  ema_zero3_port: 10543
   ema_deepspeed_config_file: "configs/deepspeed/zero3.json"
 
-  weighting_scheme: "none"
+  visible_loss_weight: 1.0
+  invisible_loss_weight: 1.0
+  weighting_scheme: "logit_normal"
+  logit_mean: 0.0
+  logit_std: 1.0
+  mode_scale: 1.29
   use_dynamic_shifting: false
   time_shift_type: "exponential"
   base_seq_len: 256
@@ -202,75 +231,39 @@ training_config:
   max_shift: 1.15
 
   is_enable_stage1: true
-  history_sizes: [16, 2, 1]
-  latent_window_size: [9]
-
-  stage2_warp_compression_mode: fixed_mem
-  is_enable_stage2: true
-  is_navit_pyramid: true
-  stage2_num_stages: 3
-  stage2_timestep_shift: 1.0
-  stage2_scheduler_gamma: 0.333333333333333333
-  stage2_stage_range:
-    - 0
-    - 0.333333333333333333
-    - 0.666666666666666666
+  history_sizes:
+    - 16
+    - 2
     - 1
-  stage2_sample_ratios: [1, 1, 1]
-  efficient_sample: false
+  latent_window_size:
+    - 9
 
   is_random_drop: false
-  geo_condition_t2v_ratio: 0.0
-  geo_condition_i2v_ratio: 0.0
+  random_drop_t2v_ratio: 0
+  random_drop_i2v_ratio: 0
+  random_drop_v2v_ratio: 0
+  geo_condition_t2v_ratio: 0.1
+  geo_condition_i2v_ratio: 0.2
 
-  corrupt_model_input: false
+  corrupt_model_input: true
+  corrupt_mode_model_input: "downsample"
+  noise_corrupt_clean_prob_model_input: 0.3
+  downsample_min_corrupt_ratio_model_input: 0.5
+  downsample_max_corrupt_ratio_model_input: 0.9
+
   corrupt_history: false
-
-  use_error_recycling: false
-  allow_error_recycling_stage2: false
-  recycle_teacher_clean: false
 
   zero_history_timestep: true
   guidance_cross_attn: true
-  restrict_self_attn: false
-  real_score_restrict_self_attn: true
+  restrict_self_attn: true
+  is_train_restrict_lora: false
+  restrict_lora: false
+  restrict_lora_rank: 128
+
   is_amplify_history: false
   history_scale_mode: "per_head"
-
+  is_train_full_patch_embedding: false
+  is_train_lora_patch_embedding: false
   has_multi_term_memory_patch: true
-  is_train_lora_multi_term_memory_patchg: true
-
-  log_iters: 5
-  no_visualize: true
-  is_train_dmd: true
-  max_grad_norm_critic: 10.0
-  dmd_generator_deepspeed_config: configs/deepspeed/zero2.json
-  dmd_critic_deepspeed_config: configs/deepspeed/zero2.json
-  critic_learning_rate: 4.0e-07
-  dfake_gen_update_ratio: 5
-  dmd_denoising_step_list: [1000, 666, 333]
-  num_critic_input_frames: 9
-  dmd_timestep_shift: 5.0
-  dmd_last_step_only: false
-  dmd_teacher_forcing: false
-  fake_guidance_scale: 0.0
-  real_guidance_scale: 3.0
-  is_amplify_first_chunk: true
-  is_dmd_vae_decode: false
-  is_use_gt_history: false
-  is_use_reward_model: false
-  dmd_num_latent_sections_min: 1
-  dmd_num_latent_sections_max: 1
-
-  is_use_gan: true
-  gan_start_step: 400
-  is_use_gan_hooks: true
-  is_use_gan_final: true
-  is_separate_gan_grad: false
-  gan_hooks: [5, 15, 25, 35]
-  gan_cond_map_dim: 768
-  gan_g_weight: 0.01
-  gan_d_weight: 0.01
-  r1_weight: 0.0
-  r1_sigma: 0.1
-  is_gan_aprox_grad: false
+  is_train_full_multi_term_memory_patchg: false
+  is_train_lora_multi_term_memory_patchg: false

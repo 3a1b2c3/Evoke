@@ -1,7 +1,9 @@
 #!/bin/bash
 # ════════════════════════════════════════════════════════════════════════════
-# Stage-3 — 30s long-video DMD distillation (dual-expert EvokeTeacher teacher, N=20 full window)
-#   config: configs/training/stage3/longvideo_30s_distill.yaml
+# Stage 3b -- post-distillation, continued from the long-distillation checkpoint
+#   produces: models/train/stage3_post_distillation   (release it as models/evoke/stage3_post_distillation)
+#   init    : models/evoke/stage3_post_distillation
+#   config  : configs/training/stage3_post_distillation.yaml
 #   Default scale: 6 nodes x 8 GPUs = 48 processes
 #   Multi-node: the platform injects RANK / MASTER_ADDR / MASTER_PORT. The node and process
 #     counts are fixed in the accelerate yaml, because CLI overrides are unreliable under the
@@ -40,7 +42,7 @@ MASTER_ADDR_ARG=${MASTER_ADDR:-127.0.0.1}
 MASTER_PORT_ARG=${MASTER_PORT:-29500}
 
 ACCELERATE_CONFIG=${ACCELERATE_CONFIG:-configs/accelerate/zero2_6x8.yaml}
-TRAINING_CONFIG=${TRAINING_CONFIG:-configs/training/stage3/longvideo_30s_distill.yaml}
+TRAINING_CONFIG=${TRAINING_CONFIG:-configs/training/stage3_post_distillation.yaml}
 
 # Topology constraint: world size must be a multiple of sf_critic_sp_world_size (=8), and one SP
 #   group is one node.
@@ -50,9 +52,9 @@ export SF_PROFILE=${SF_PROFILE:-0}
 export SF_VRAM_PROBE=${SF_VRAM_PROBE:-0}
 
 mkdir -p logs
-echo "[longvideo_30s_distill] rank=$MACHINE_RANK master=$MASTER_ADDR_ARG:$MASTER_PORT_ARG"
-echo "[longvideo_30s_distill] accelerate=$ACCELERATE_CONFIG"
-echo "[longvideo_30s_distill] training=$TRAINING_CONFIG"
+echo "[stage3_post_distillation] rank=$MACHINE_RANK master=$MASTER_ADDR_ARG:$MASTER_PORT_ARG"
+echo "[stage3_post_distillation] accelerate=$ACCELERATE_CONFIG"
+echo "[stage3_post_distillation] training=$TRAINING_CONFIG"
 
 accelerate launch \
   --config_file "$ACCELERATE_CONFIG" \
@@ -61,4 +63,4 @@ accelerate launch \
   --main_process_port "$MASTER_PORT_ARG" \
   train_evoke.py \
   --config "$TRAINING_CONFIG" \
-  2>&1 | tee "logs/longvideo_30s_distill_$(date +%Y%m%d_%H%M%S)_rank${MACHINE_RANK}.log"
+  2>&1 | tee "logs/stage3_post_distillation_$(date +%Y%m%d_%H%M%S)_rank${MACHINE_RANK}.log"

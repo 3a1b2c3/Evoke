@@ -175,7 +175,7 @@ the launchers say so at startup. All three modes are in distribution for stage1.
 
 `stage1` is the opposite case — it is **not** distilled, so it is sampled like an ordinary diffusion
 model: 50 steps with CFG 5.0. Do not copy `validation_config.num_inference_steps` (=8) out of
-`stage1.yaml`; that is the cheap sanity check run during training, and 8 steps with CFG off visibly
+`stage1_camera_control.yaml`; that is the cheap sanity check run during training, and 8 steps with CFG off visibly
 smears the result.
 
 ## Hour-scale rollouts

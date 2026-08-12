@@ -1,7 +1,9 @@
 #!/bin/bash
 # ════════════════════════════════════════════════════════════════════════════
-# Stage-1 — geometric state long-context training (LoRA)
-#   config: configs/training/stage1/stage1.yaml
+# Stage 2 -- few-step DMD distillation (3-step pyramid)
+#   produces: models/train/stage2_few_step_training   (release it as models/evoke/stage2_few_step_training)
+#   init    : models/evoke/stage2_few_step_training
+#   config  : configs/training/stage2_few_step_training.yaml
 #   Default scale: 1 node x 8 GPUs
 #   Multi-node: the platform injects RANK / MASTER_ADDR / MASTER_PORT. The node and process
 #     counts are fixed in the accelerate yaml, because CLI overrides are unreliable under the
@@ -40,12 +42,12 @@ MASTER_ADDR_ARG=${MASTER_ADDR:-127.0.0.1}
 MASTER_PORT_ARG=${MASTER_PORT:-29500}
 
 ACCELERATE_CONFIG=${ACCELERATE_CONFIG:-configs/accelerate/zero2_1x8.yaml}
-TRAINING_CONFIG=${TRAINING_CONFIG:-configs/training/stage1/stage1.yaml}
+TRAINING_CONFIG=${TRAINING_CONFIG:-configs/training/stage2_few_step_training.yaml}
 
 mkdir -p logs
-echo "[stage1] rank=$MACHINE_RANK master=$MASTER_ADDR_ARG:$MASTER_PORT_ARG"
-echo "[stage1] accelerate=$ACCELERATE_CONFIG"
-echo "[stage1] training=$TRAINING_CONFIG"
+echo "[stage2_few_step_training] rank=$MACHINE_RANK master=$MASTER_ADDR_ARG:$MASTER_PORT_ARG"
+echo "[stage2_few_step_training] accelerate=$ACCELERATE_CONFIG"
+echo "[stage2_few_step_training] training=$TRAINING_CONFIG"
 
 accelerate launch \
   --config_file "$ACCELERATE_CONFIG" \
@@ -54,4 +56,4 @@ accelerate launch \
   --main_process_port "$MASTER_PORT_ARG" \
   train_evoke.py \
   --config "$TRAINING_CONFIG" \
-  2>&1 | tee "logs/stage1_$(date +%Y%m%d_%H%M%S)_rank${MACHINE_RANK}.log"
+  2>&1 | tee "logs/stage2_few_step_training_$(date +%Y%m%d_%H%M%S)_rank${MACHINE_RANK}.log"

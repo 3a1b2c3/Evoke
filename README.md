@@ -135,27 +135,19 @@ pip install -r requirements.txt
 
 Two things `pip` will not do: `diffusers` is pinned to a **development fork that is not on PyPI**
 (install it first or nothing imports), and `postprocess_viz.py` needs the **`ffmpeg` binary** on
-`PATH`. The depth backend [ViGeo](https://huggingface.co/pkqbajng/ViGeo) is vendored under
-`evoke/third_party/`, so only its weights are needed;
-[Depth-Anything-3](https://huggingface.co/spaces/depth-anything/depth-anything-3) is **optional** and
-only used if you set `DEPTH_BACKEND=da3`.
+`PATH`. Both depth backends (ViGeo, Depth-Anything-3) are **vendored** under
+`evoke/third_party/`, so only their weights are downloaded — see [Weights](#-weights).
 
 ## 📦 Weights
 
-Download from **[🤗 SII-YuanyangYin/Evoke](https://huggingface.co/SII-YuanyangYin/Evoke)** and lay it
-out under `models/` (gitignored) like this. Every released directory is the **parent** of a
+Everything goes under `models/` (gitignored). Every released EVOKE directory is the **parent** of a
 `transformer/`, because it loads as `from_pretrained(path, subfolder="transformer")`.
-
-```bash
-huggingface-cli download SII-YuanyangYin/Evoke --local-dir models
-```
 
 ```
 models/
-├── evoke-base/                                   base model (also supplies vae / scheduler / text_encoder)
-├── evoke-distilled/                              few-step init for stage-2 distillation
-├── ViGeo1.1/                                     depth backend weights -- REQUIRED
-├── DA3/                                          depth backend weights -- OPTIONAL (DEPTH_BACKEND=da3)
+├── evoke-base/                                   vae / text_encoder / tokenizer / scheduler only
+├── ViGeo1.1/vigeo.pt                             depth backend -- REQUIRED
+├── DA3/{config.json,model.safetensors}           depth backend -- OPTIONAL
 └── evoke/
     ├── stage1_camera_control/transformer/        multi-step camera-controllable model
     ├── stage2_few_step_training/transformer/     few-step distillation (3-step pyramid)
@@ -164,10 +156,29 @@ models/
     └── evoke_teacher/{high,low}_noise/           the two DMD teacher experts -- training only
 ```
 
+```bash
+# EVOKE -- the four released models, the teacher, and the base components
+huggingface-cli download SII-YuanyangYin/Evoke --local-dir models
+
+# ViGeo -- REQUIRED. The depth backend behind the world state bank; every shipped
+# recipe uses it (DEPTH_BACKEND=vigeo, cloud_warp.backend: vigeo).
+huggingface-cli download pkqbajng/ViGeo --local-dir models/ViGeo1.1
+```
+
+**Depth-Anything-3 is optional** — nothing in the default path touches it, and you only need it if you
+set `DEPTH_BACKEND=da3`. Get the `da3-giant` weights from
+[depth-anything-3](https://huggingface.co/spaces/depth-anything/depth-anything-3) and drop
+`config.json` + `model.safetensors` into `models/DA3/`. Switching backend is a **recipe change**, not a
+speed knob — training and inference must agree on it.
+
+> Both depth backends ship under **CC-BY-NC-4.0**, which is more restrictive than this repo's
+> Apache-2.0. Check their licences before any commercial use.
+
 ## 🚀 Inference
 
 **384 × 640 @ 24 fps.** One chunk = 36 frames = 1.5 s, so `NUM_CHUNKS=20` is a 30 s clip. All four
-commands run on the data bundled in `examples/`, one case per mode — no external dataset:
+commands run on the data bundled in `examples/` — one case each, four for `segment` — no external
+dataset:
 
 ```bash
 MODE=t2v     NUM_CHUNKS=20              bash scripts/inference/infer_post_distill.sh   # prompt only
@@ -182,8 +193,10 @@ MODE=segment NUM_CHUNKS=6  MAX_CASES=0  bash scripts/inference/infer_post_distil
 | `infer_stage1.sh` | `models/evoke/stage1_camera_control` | 50, CFG 5.0 |
 | `infer_evoke_teacher.sh` | `models/evoke/evoke_teacher` | 50, CFG 5.0 (example only) |
 
-Results land in `<OUT_ROOT>/<case>/geo_pred.mp4`. Both distilled models were trained on v2v
-conditioning alone, so `MODE=i2v|t2v` on them is **zero-shot** and the launchers say so at startup.
+Results land in `<OUT_ROOT>/<case>/geo_pred.mp4`. Every distilled model was trained on v2v
+conditioning alone (`geo_condition_{i2v,t2v}_ratio: 0.0`), so `MODE=i2v|t2v` on them is **zero-shot**
+and the launchers say so at startup. Only `stage1_camera_control` has all three modes in distribution
+(ratios 0.1 / 0.2).
 
 Everything else — the mode × model matrix, hour-scale rollouts, per-chunk log format, and how to point
 the launchers at your own data — is in **[`scripts/inference/README.md`](scripts/inference/README.md)**.
@@ -191,21 +204,25 @@ Every launcher also has `-h`.
 
 ## 🗝️ Training
 
+One launcher per released model. Each initialises from **its own released checkpoint**, so you
+continue from where we left off — nobody reproduces a stage from scratch, and the pretraining data is
+not part of this release:
+
 ```bash
-bash scripts/training/train_stage1.sh                  # camera-controllable long context   zero2_1x8
-bash scripts/training/train_stage2.sh                  # NaViT pyramid (coarse-to-fine)     zero2_1x8
-bash scripts/training/train_fewstep_distill.sh         # few-step DMD distillation          zero2_1x8
-bash scripts/training/train_longvideo_30s_distill.sh   # 30s long-video DMD distillation    zero2_6x8
+bash scripts/training/train_stage1_camera_control.sh      # no teacher (not a distillation)   1x8
+bash scripts/training/train_stage2_few_step_training.sh   # teacher: stage1_camera_control    1x8
+bash scripts/training/train_stage3_long_distillation.sh   # teacher: evoke_teacher, 2 experts 6x8
+bash scripts/training/train_stage3_post_distillation.sh   # teacher: stage1_camera_control    6x8
 ```
+
+Post-distillation goes back to the stage-1 teacher on purpose: it is a short run that firms up camera
+control, not another long-horizon distillation.
+
+Each writes to `models/train/<same-name>/`; move or symlink it into `models/evoke/` to serve it.
 
 All four start with **no external dataset** — they point at the single 60 s clip in `examples/data/`,
-which is a pipeline check, not a training run. For a real run swap `data_yaml_path` to the production
-mix named beside it in the config. Post-distillation reuses the last launcher with a different config:
-
-```bash
-TRAINING_CONFIG=configs/training/stage3/post_distill.yaml \
-  bash scripts/training/train_longvideo_30s_distill.sh
-```
+so they run as a pipeline check, not a real training run (one clip overfits immediately). For a real
+run swap `data_yaml_path` to the production mix named beside it in the config.
 
 Scale is set by `ACCELERATE_CONFIG` — the topology is baked into the accelerate yaml, so do not
 override it with `--num_machines`. To merge a LoRA checkpoint into a full transformer, see
@@ -223,9 +240,9 @@ swallows it).
 ## 👍 Acknowledgement
 
 This codebase is a derivative of **[Helios](https://github.com/PKU-YuanGroup/Helios)** —
-`models/evoke-base` is a copy of its released base weights, and the pipeline, transformer and
-scheduler modules carry the original copyright notices alongside ours. Helios in turn builds on
-**Wan**, which supplies the VAE and text encoder. Thanks also to
+`models/evoke-base` holds the vae / text encoder / tokenizer / scheduler from its released base, and
+the pipeline, transformer and scheduler modules carry the original copyright notices alongside ours.
+Helios in turn builds on **Wan**, which is where those components originate. Thanks also to
 **[lingbot-world](https://github.com/robbyant/lingbot-world)**.
 
 Warp-as-history conditioning — rendering observed content into the target view and selecting history

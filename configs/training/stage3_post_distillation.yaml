@@ -1,6 +1,6 @@
 # Few-step distillation with the ViGeo depth backend.
 #
-# Identical to fewstep_distill.yaml except for cloud_warp.backend (plus the output_dir / wandb_name that
+# Identical to stage2_few_step_training.yaml except for cloud_warp.backend (plus the output_dir / wandb_name that
 # keep the two runs apart), so a comparison against that run isolates the geometry model alone. ViGeo
 # takes no pose or intrinsics input, unlike DA3; see evoke/modules/geometric_state/vigeo_cloud.py.
 #
@@ -43,7 +43,7 @@ model_config:
   # Student init: the long-distillation checkpoint (structurally identical to Evoke-Distilled --
   # same class, 40 layers, 1101 tensors -- so the LoRA target set is unchanged). vae / scheduler /
   # text_encoder still come from pretrained_model_name_or_path below.
-  transformer_model_name_or_path: models/evoke/stage3_long_distillation
+  transformer_model_name_or_path: models/evoke/stage3_post_distillation
   subfolder: "transformer"
   real_score_model_name_or_path: models/evoke/stage1_camera_control
   load_checkpoints_custom: false

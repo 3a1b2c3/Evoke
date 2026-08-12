@@ -1,7 +1,9 @@
 #!/bin/bash
 # ════════════════════════════════════════════════════════════════════════════
-# Stage-3 — few-step DMD distillation (3-step pyramid + GAN, single 141-frame window)
-#   config: configs/training/stage3/fewstep_distill.yaml
+# Stage 1 -- camera-controllable long-context training (LoRA)
+#   produces: models/train/stage1_camera_control   (release it as models/evoke/stage1_camera_control)
+#   init    : models/evoke/stage1_camera_control
+#   config  : configs/training/stage1_camera_control.yaml
 #   Default scale: 1 node x 8 GPUs
 #   Multi-node: the platform injects RANK / MASTER_ADDR / MASTER_PORT. The node and process
 #     counts are fixed in the accelerate yaml, because CLI overrides are unreliable under the
@@ -40,12 +42,12 @@ MASTER_ADDR_ARG=${MASTER_ADDR:-127.0.0.1}
 MASTER_PORT_ARG=${MASTER_PORT:-29500}
 
 ACCELERATE_CONFIG=${ACCELERATE_CONFIG:-configs/accelerate/zero2_1x8.yaml}
-TRAINING_CONFIG=${TRAINING_CONFIG:-configs/training/stage3/fewstep_distill.yaml}
+TRAINING_CONFIG=${TRAINING_CONFIG:-configs/training/stage1_camera_control.yaml}
 
 mkdir -p logs
-echo "[fewstep_distill] rank=$MACHINE_RANK master=$MASTER_ADDR_ARG:$MASTER_PORT_ARG"
-echo "[fewstep_distill] accelerate=$ACCELERATE_CONFIG"
-echo "[fewstep_distill] training=$TRAINING_CONFIG"
+echo "[stage1_camera_control] rank=$MACHINE_RANK master=$MASTER_ADDR_ARG:$MASTER_PORT_ARG"
+echo "[stage1_camera_control] accelerate=$ACCELERATE_CONFIG"
+echo "[stage1_camera_control] training=$TRAINING_CONFIG"
 
 accelerate launch \
   --config_file "$ACCELERATE_CONFIG" \
@@ -54,4 +56,4 @@ accelerate launch \
   --main_process_port "$MASTER_PORT_ARG" \
   train_evoke.py \
   --config "$TRAINING_CONFIG" \
-  2>&1 | tee "logs/fewstep_distill_$(date +%Y%m%d_%H%M%S)_rank${MACHINE_RANK}.log"
+  2>&1 | tee "logs/stage1_camera_control_$(date +%Y%m%d_%H%M%S)_rank${MACHINE_RANK}.log"

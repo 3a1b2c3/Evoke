@@ -120,8 +120,8 @@ STAGE2_STEPS = _env("STAGE2_STEPS", "1 1 1").split()
 STAGE2_STAGE_RANGE = _env("STAGE2_STAGE_RANGE", "0 0.3333333333333333 0.6666666666666666 1").split()
 # DMD timestep schedule. AMPLIFY_FIRST_CHUNK=1 gives the FIRST chunk 2 sampling steps per pyramid stage
 #   instead of 1 (pipeline_evoke.py; read only inside the use_dmd branch, hence the pairing).
-#   These exist because the post_distill ckpts were trained that way -- configs/training/stage3/
-#   post_distill.yaml sets is_train_dmd/is_amplify_first_chunk true and dmd_num_latent_sections 1, so the
+#   These exist because the post_distill ckpts were trained that way -- configs/training/
+#   stage3_post_distillation.yaml sets is_train_dmd/is_amplify_first_chunk true and dmd_num_latent_sections 1, so the
 #   student's own rollout ran its single chunk at 2 steps/stage (utils_evoke_post.py).
 # Inference stays at **1 step per stage for every chunk** regardless, so
 #   both default to 0 and the scored configs do not set them; they are here for ablation only. Keeping
