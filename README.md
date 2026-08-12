@@ -1,17 +1,20 @@
 <h1 align="center">
-  <picture>
+  <sub><picture>
     <source media="(prefers-color-scheme: dark)" srcset="examples/logo/logo_dark.png">
-    <img src="examples/logo/logo_light.png" width="40" alt="">
-  </picture>
+    <img src="examples/logo/logo_light.png" width="34" alt="">
+  </picture></sub>
   EVOKE: Endless Interactive World with<br>Bounded State and Long-Horizon Supervision
 </h1>
 
 <p align="center">
   <a href="https://evoke-world.github.io/Evoke/"><img src="https://img.shields.io/badge/🌐_Project_Page-evoke--world.github.io-1a73e8.svg" alt="Project Page"></a>
+  <a href="#"><img src="https://img.shields.io/badge/arXiv-coming_soon-b31b1b.svg" alt="arXiv"></a>
+  <a href="https://huggingface.co/SII-YuanyangYin/Evoke"><img src="https://img.shields.io/badge/🤗_Weights-SII--YuanyangYin/Evoke-ffce1c.svg" alt="Weights"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License"></a>
 </p>
 
-<!-- TODO(release): add arXiv / HuggingFace / ModelScope badges once those links are public. -->
+<!-- TODO(release): the arXiv badge above is a placeholder -- swap href="#" for the abs/ URL and
+     change "coming_soon" to the eprint id once the preprint is public. Same for the bibtex below. -->
 
 <p align="center">
   <b>A three-step, CFG-free world model that remembers where it has been, takes direction mid-flight,<br>
@@ -29,10 +32,9 @@
   context stays *bounded* however long the session runs — no trading session length for memory.
 - 🎛️ **Re-promptable mid-flight.** Per-chunk conditioning lets you change the prompt *while the
   rollout is running*: the sky ignites, the storm rolls in, no cut and no restart.
-- 🧑‍🏫 **A teacher rebuilt for the long horizon.** Chunk-wise grouping + retrieval of distant frames
-  + a linear-attention global state give **linear** memory and compute growth — which is what makes
-  30 s self-forced supervision affordable, and what exposes the drift that still looks fine inside a
-  short window.
+- 🧑‍🏫 **A teacher rebuilt for the long horizon.** Chunk-wise grouping, distant-frame retrieval and a
+  linear-attention global state make its memory and compute grow **linearly** — which is what makes
+  30 s self-forced supervision affordable.
 
 ## 🎬 Demos
 
@@ -140,8 +142,13 @@ only used if you set `DEPTH_BACKEND=da3`.
 
 ## 📦 Weights
 
-`models/` is gitignored — download the weights and lay them out like this. Every released directory is
-the **parent** of a `transformer/`, because it loads as `from_pretrained(path, subfolder="transformer")`.
+Download from **[🤗 SII-YuanyangYin/Evoke](https://huggingface.co/SII-YuanyangYin/Evoke)** and lay it
+out under `models/` (gitignored) like this. Every released directory is the **parent** of a
+`transformer/`, because it loads as `from_pretrained(path, subfolder="transformer")`.
+
+```bash
+huggingface-cli download SII-YuanyangYin/Evoke --local-dir models
+```
 
 ```
 models/
@@ -215,20 +222,14 @@ swallows it).
 
 ## 👍 Acknowledgement
 
-This codebase is a derivative of **[Helios](https://github.com/PKU-YuanGroup/Helios)**
-(PKU-YuanGroup, [arXiv:2603.04379](https://arxiv.org/abs/2603.04379)) — `models/evoke-base` is a copy
-of their released Helios-Base weights (see `models/evoke-base/PROVENANCE.md`), and the pipeline,
-transformer and scheduler modules carry their original copyright notices alongside ours. Helios is in
-turn built on the **Wan** family, which supplies the VAE and text encoder.
+This codebase is a derivative of **[Helios](https://github.com/PKU-YuanGroup/Helios)** —
+`models/evoke-base` is a copy of its released base weights, and the pipeline, transformer and
+scheduler modules carry the original copyright notices alongside ours. Helios in turn builds on
+**Wan**, which supplies the VAE and text encoder. Thanks also to
+**[lingbot-world](https://github.com/robbyant/lingbot-world)**.
 
-The vendored geometry dependencies are **Depth-Anything-3**, **Pi3** and **ViGeo**, each kept under
-`evoke/third_party/` with its own `LICENSE` and `PROVENANCE.md`.
-
-Rendering previously observed content into the target view, aligning its positions with the target
-frames, and selecting history tokens by a visibility mask all follow prior warp-as-history
-conditioning; we adopt those mechanisms and claim none of them. What EVOKE adds is the connection of
-that conditioning interface to a session-persistent point store with explicit read, write and eviction
-operations, and its joint training with a few-step student.
+Warp-as-history conditioning — rendering observed content into the target view and selecting history
+tokens by a visibility mask — follows prior work; we adopt it and claim none of it.
 
 ## 🔒 License
 
