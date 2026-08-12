@@ -8,7 +8,7 @@
 
 <p align="center">
   <a href="https://evoke-world.github.io/Evoke/"><img src="https://img.shields.io/badge/🌐_Project_Page-evoke--world.github.io-1a73e8.svg" alt="Project Page"></a>
-  <a href="LICENSE.txt"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License"></a>
   <img src="https://img.shields.io/badge/python-3.10-blue.svg" alt="Python 3.10">
   <img src="https://img.shields.io/badge/CUDA-12.4-green.svg" alt="CUDA 12.4">
   <img src="https://img.shields.io/badge/steps-3_·_CFG--free-orange.svg" alt="3 steps, CFG-free">
@@ -321,7 +321,7 @@ operations, and its joint training with a few-step student.
 
 ## 🔒 License
 
-Apache-2.0, see `LICENSE.txt`. Vendored third-party code keeps its own license and provenance under
+Apache-2.0, see `LICENSE`. Vendored third-party code keeps its own license and provenance under
 `evoke/third_party/*`.
 
 ## ✏️ Citation
