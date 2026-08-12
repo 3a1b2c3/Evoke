@@ -99,12 +99,16 @@ export TRANSFORMER_PATH=${TRANSFORMER_PATH:-"models/evoke/stage1_camera_control"
 export MAX_CASES=${MAX_CASES:-8}       # first N cases only; MAX_CASES=0 runs the whole jsonl
 export NUM_FRAMES=${NUM_FRAMES:-1437}  # -> 44 chunks -> 1581 frames ~= 65.9s @24fps (see -h)
 export HEIGHT=${HEIGHT:-384} WIDTH=${WIDTH:-640} FPS=${FPS:-24}
-export GUIDANCE_SCALE=${GUIDANCE_SCALE:-1.0}
+export GUIDANCE_SCALE=${GUIDANCE_SCALE:-5.0}
 export VAE_DECODE_TYPE=${VAE_DECODE_TYPE:-persistent}
 
-# -- mirrors stage1.yaml: no pyramid / 8 steps / restrict+kv-cache / despeckle ON --
+# -- mirrors stage1.yaml: no pyramid / restrict+kv-cache / despeckle ON --
 export IS_STAGE2=0                     # stage1 has no NaViT pyramid
-export NUM_INFERENCE_STEPS=${NUM_INFERENCE_STEPS:-8}   # = validation_config.num_inference_steps
+export NUM_INFERENCE_STEPS=${NUM_INFERENCE_STEPS:-50}  # this model is NOT distilled: sample it as a
+                                       #   normal multi-step diffusion model. Do NOT copy
+                                       #   validation_config.num_inference_steps (=8) from stage1.yaml:
+                                       #   that is the cheap in-training sanity check, not a sampling
+                                       #   recipe, and 8 steps with CFG off visibly smears the result.
 export RESTRICT=1                      # training_config.restrict_self_attn=true -> required at inference
                                        #   (kv-cache is then free speedup); running without it is a
                                        #   train/infer attention mismatch, not just slower
@@ -139,7 +143,7 @@ SLOG="logs/infer_stage1_$MODE"; mkdir -p "$SLOG"
 echo "=============================================================================="
 echo "[stage1] CHECKPOINT : $TRANSFORMER_PATH"
 echo "[stage1]              ^-- $TP_ORIGIN"
-echo "[stage1] mode=$MODE steps=8 (multi-step, no pyramid)"
+echo "[stage1] mode=$MODE steps=$NUM_INFERENCE_STEPS guidance_scale=$GUIDANCE_SCALE (multi-step, no pyramid)"
 echo "[stage1] jsonl=$JSONL max_cases=$MAX_CASES frames=$EFF_FRAMES$EFF_NOTE shards=$NSHARD"
 echo "[stage1] out=$OUT_ROOT"
 echo "=============================================================================="

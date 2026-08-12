@@ -5,23 +5,22 @@ minute scale. All four commands below run on data bundled in `examples/` — no 
 
 ```bash
 # t2v -- prompt only, no camera control
-MODE=t2v JSONL=examples/t2v/cases.jsonl NUM_CHUNKS=20 \
-  bash scripts/inference/infer_post_distill.sh
+MODE=t2v NUM_CHUNKS=20 bash scripts/inference/infer_post_distill.sh
 
 # i2v -- first frame + camera trajectory
-MODE=i2v JSONL=examples/i2v/cases.jsonl NUM_CHUNKS=20 \
-  bash scripts/inference/infer_post_distill.sh
+MODE=i2v NUM_CHUNKS=20 bash scripts/inference/infer_post_distill.sh
 
 # v2v -- reference video + its camera trajectory
-MODE=v2v JSONL=examples/v2v/cases.jsonl NUM_CHUNKS=20 \
-  bash scripts/inference/infer_post_distill.sh
+MODE=v2v NUM_CHUNKS=20 bash scripts/inference/infer_post_distill.sh
 
-# segment prompts -- same input as i2v, but the prompt switches during the rollout
-MODE=i2v JSONL=examples/segment_prompts/cases.jsonl NUM_CHUNKS=24 \
-  bash scripts/inference/infer_post_distill.sh
+# segment -- i2v plus a per-chunk prompt schedule; the prompt switches mid-rollout
+MODE=segment NUM_CHUNKS=6 MAX_CASES=0 bash scripts/inference/infer_post_distill.sh
 ```
 
-Result lands in `output_evoke/infer/longvideo_30s_distill_<mode>/<case>/geo_pred.mp4`.
+Each mode already points at its own bundled jsonl, so `JSONL=` is only needed for your own data.
+
+Result lands in `<OUT_ROOT>/<case>/geo_pred.mp4`; `OUT_ROOT` defaults to
+`output_evoke/infer/post_distill_<mode>` here and `output_evoke/infer/stage1_<mode>` for stage 1.
 
 If the launcher stops at `[preflight] FATAL: ... cannot import torch + cv2`, point it at the right
 interpreter: `EVOKE_PYTHON_BIN=<your-env>/bin bash scripts/inference/...`.
@@ -40,7 +39,7 @@ reports two levels: a bar over chunks, and one line per chunk splitting it into 
 chunks:  15%|█▌        | 3/20 [00:27<02:33,  9.19s/chunk]
 ```
 
-`warp` is the DA3 point-cloud render plus its encode to latents, `diffusion` the denoising steps
+`warp` is the point-cloud render (ViGeo depth by default) plus its encode to latents, `diffusion` the denoising steps
 themselves, and `decode+dump` the VAE decode and the per-chunk segment videos — on the bundled v2v
 case that last part costs more than the generation it follows. `cov` is warp coverage and `pool` the
 number of source frames fused, the two numbers worth watching over a long rollout.
@@ -51,7 +50,8 @@ reaches a terminal, so the engine's plain per-chunk lines are the better record.
 The log file gets the same lines with the bar's redraws stripped, so it stays greppable — progress
 bars are terminal UI and a file full of `\r` frames is not readable. `EVOKE_INFER_DEBUG=1` restores
 everything the bar replaces: the per-step DiT timings, the per-chunk sampling bar, the raw
-`[GEO-da3]` / segment-dump lines, and the vendored DA3 depth logger.
+`[GEO-da3]` / segment-dump lines (the tag is historical; the backend is whatever
+`DEPTH_BACKEND` selects), and the vendored depth logger.
 
 ## Length: use NUM_CHUNKS
 
@@ -117,7 +117,7 @@ the prompt. Optical flow will not show it, because a mid-clip reset leaves the t
 
 | Launcher | Weights | Steps |
 |---|---|---|
-| `infer_stage1.sh` | `models/evoke/stage1_camera_control` | 8 |
+| `infer_stage1.sh` | `models/evoke/stage1_camera_control` | 50 (CFG 5.0) |
 | `infer_post_distill.sh` | `models/evoke/stage3_post_distillation` | 3 |
 
 Any other checkpoint runs on the same launcher and recipe — pass
@@ -173,6 +173,11 @@ the launchers say so at startup. All three modes are in distribution for stage1.
 3 steps and CFG-off are properties of the distilled weights, not knobs: the step count comes from
 `STAGE2_STEPS`, and raising `NUM_INFERENCE_STEPS` does nothing (the launcher warns).
 
+`stage1` is the opposite case — it is **not** distilled, so it is sampled like an ordinary diffusion
+model: 50 steps with CFG 5.0. Do not copy `validation_config.num_inference_steps` (=8) out of
+`stage1.yaml`; that is the cheap sanity check run during training, and 8 steps with CFG off visibly
+smears the result.
+
 ## Hour-scale rollouts
 
 Without streaming, the pipeline accumulates the whole clip as one fp32 GPU tensor (~2.95 MB/frame at
@@ -184,7 +189,7 @@ frames unless you opt in:
   identical, but the *side outputs* differ: the 4-panel video becomes a concatenation of the
   per-chunk panels rather than the whole-video comparison, and `sample_frames/` holds segment head
   frames instead of 5 evenly spaced ones.
-- `GEO_HIST_MAX_FRAMES=<N>` — slide the DA3 point cloud so it keeps only the last N pixel frames.
+- `GEO_HIST_MAX_FRAMES=<N>` — slide the point cloud so it keeps only the last N pixel frames.
   Required beyond ~10min (the cloud otherwise grows by 12 dense depth frames per chunk), but note
   this **changes what the warp sees**, i.e. it is a recipe change and not just a memory knob. Must
   be much larger than `WARP_LAG * 36`; 720 (~30s) is a typical value.
