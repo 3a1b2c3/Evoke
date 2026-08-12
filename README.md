@@ -1,8 +1,8 @@
 <h1 align="center">
   <sub><picture>
     <source media="(prefers-color-scheme: dark)" srcset="examples/logo/logo_dark.png">
-    <img src="examples/logo/logo_light.png" width="34" alt="">
-  </picture></sub>
+    <img src="examples/logo/logo_light.png" width="38" alt="">
+  </picture></sub>&nbsp;&nbsp;&nbsp;
   EVOKE: Endless Interactive World with<br>Bounded State and Long-Horizon Supervision
 </h1>
 
