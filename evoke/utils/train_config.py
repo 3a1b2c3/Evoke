@@ -1543,17 +1543,17 @@ def validate_sf10s_evoke_teacher_config(args) -> None:
             "[GEOREG] sf_geo_reg_weight>0 only supports real_score_arch=evoke_teacher (the branch is gated on is_evoke_teacher_score, otherwise it silently does nothing)"
     if getattr(mc, "real_score_arch", "evoke") != "evoke_teacher":
         return
-    lw = mc.evoke_teacher
+    et = mc.evoke_teacher
     assert et.high_dir and et.low_dir, "[SF10S] evoke_teacher.high_dir/low_dir are required (merged directories)"
     assert tc.is_train_dmd, "[SF10S] real_score_arch=evoke_teacher is only for DMD training"
     assert tc.is_enable_stage2, "[SF10S] only the stage2 path is supported (the stage1 rollout was never reworked for prefix/segmented prompts)"
-    assert not tc.is_use_gan, "[SF10S] P2a does not support GAN (the wrapper has no gan_mode)"
+    assert not tc.is_use_gan, "[SF10S] the evoke_teacher path does not support GAN (the wrapper has no gan_mode)"
     assert not tc.is_use_gt_history, "[SF10S] mutually exclusive with gt-history single-section distillation (the prefix is injected via rollout)"
     assert not tc.is_use_reward_model and not tc.is_dmd_vae_decode, \
         "[SF10S] the evoke_teacher path does not support reward/vae_decode"
     # tail-chunk warp ported into the evoke_teacher path.
-    #   the original "assert not use_geometric_state" (P2a teacher nocam) is lifted: the student rollout may render warp on its tail sections (SFWarpRollout),
-    #   while the teacher side stays nocam/i2v (scoring does not consume warp). with warp off all asserts below no-op -> parent config/P2a bit-identical.
+    #   the teacher stays nocam, but the student rollout may render warp on its tail sections (SFWarpRollout),
+    #   while the teacher side stays nocam/i2v (scoring does not consume warp). with warp off all asserts below no-op.
     if bool(tc.use_geometric_state):
         # warp-on needs sf_rollout_out (the shared rollout) to be populated, otherwise the critic silently re-rolls warp-free and mismatches.
         #   both paths populate it: (a) the curriculum windowed scoring path (sf_windowed_score, the is_evoke_teacher_score and sf_curriculum_enabled block);
@@ -1632,14 +1632,14 @@ def validate_sf10s_evoke_teacher_config(args) -> None:
         win = win[0]
     win = int(win)
     P = int(tc.rollout_prefix_sections)
-    assert P >= 1, "[SF10S] P2a needs at least 1 GT prefix chunk (same source as the teacher i2v first frame)"
+    assert P >= 1, "[SF10S] needs at least 1 GT prefix chunk (same source as the teacher i2v first frame)"
     # data side: the full-rollout interleave mode must be on (it produces prefix/y/segment)
     assert args.data_config.use_full_rollout_interleave, \
         "[SF10S] data_config.use_full_rollout_interleave must be true"
     if not bool(getattr(tc, "sf_curriculum_enabled", False)):
-        # -- fixed-N path (the original P2a behavior, kept verbatim) --
+        # -- fixed-N path --
         n_sec = int(tc.dmd_num_latent_sections_min)
-        assert n_sec == int(tc.dmd_num_latent_sections_max), "[SF10S] P2a uses a fixed section count"
+        assert n_sec == int(tc.dmd_num_latent_sections_max), "[SF10S] the fixed-N path uses a fixed section count"
         assert int(tc.num_critic_input_frames) == n_sec * win, (
             f"[SF10S] num_critic_input_frames must = the total generated frames {n_sec}*{win} (review M1: larger trips the rollout assert, "
             f"smaller shrinks the loss window), got {tc.num_critic_input_frames}")
@@ -1848,7 +1848,7 @@ def validate_sf_evoke_config(args) -> None:
     assert float(tc.dmd_timestep_shift) == 5.0 and not tc.use_dynamic_shifting, \
         "[SF-EVOKE] the teacher t<->sigma mapping is locked to shift=5.0 / no dynamic shifting"
     assert int(tc.rollout_prefix_sections) >= 1, "[SF-EVOKE] needs >=1 GT prefix chunk (i2v anchor + warp seed from the same source)"
-    # teacher/critic backbone = Evoke-Base (no plucker weights) -> the geo plucker must be off when building the teacher (review Q4②).
+    # teacher/critic backbone carries no plucker weights -> the geo plucker must be off when building the teacher.
     _geo = getattr(mc, "geometric_state", None)
     if _geo is not None and bool(getattr(_geo, "enabled", False)):
         assert not bool(getattr(_geo, "geo_warp_plucker_enabled", False)), \

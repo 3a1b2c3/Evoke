@@ -2412,8 +2412,8 @@ def main(args):
                     _geo_protect_short_frames = 1 + int(_geo_warp_lat.shape[2])
                     # short tier layout: [prefix(1) | warp(W) | prev_short(1)] (built below).
                     assert batch.get("geo_source_image_latent") is not None, (
-                        "GEO training needs batch['geo_source_image_latent'] (output of online_materialize Fix 2); "
-                        "use_geometric_state may have been left off in the config. see PR-12 Fix 2."
+                        "GEO training needs batch['geo_source_image_latent'] (produced by online_materialize); "
+                        "use_geometric_state may have been left off in the config."
                     )
                     _geo_prefix_latent_clean = batch["geo_source_image_latent"].to(
                         device=accelerator.device, dtype=weight_dtype, non_blocking=True
@@ -3837,7 +3837,7 @@ def main(args):
                             "generator_loss": generator_log_dict["generator_loss"].mean().item(),
                         }
                         # a non-boundary micro-step with grad_accum>1 does not run clip_grad_norm_, hence the key is absent.
-                        # behavior is unchanged for the formal config with grad_accum=1; the equivalence baseline R uses grad_accum=G.
+                        # behavior is unchanged for the shipped configs, which all use grad_accum=1.
                         if "generator_grad_norm" in generator_log_dict:
                             base_logs["generator_grad_norm"] = safe_item(
                                 generator_log_dict["generator_grad_norm"]

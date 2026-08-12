@@ -9,7 +9,7 @@
 #   that produces segment_prompts for the use_full_rollout_interleave mode to consume). All three
 #   sources' caption files have been verified to contain segments/merged_segments.
 #   10s clip x 12s segment granularity -> ~83% of samples contain a prompt switch point.
-#   The pose fields are kept (P2a does not use warp/pose, but keeping the loader structure identical
+#   The pose fields are kept (this recipe does not use warp/pose, but keeping the loader structure identical
 #   saves trouble).
 # Aligned with the teacher's own training config: short_prompt +
 #   strip_camera_tags + the upstream mixing ratio (see below).

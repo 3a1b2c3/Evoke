@@ -446,7 +446,7 @@ def parse_args(argv=None):
     p.add_argument("--geo_carve_min_views", type=int, default=1,
                    help="[variant 2] multi-view voting: an old point must be seen through by at least this many new frames before deletion (1 = delete on any single frame / legacy OR behaviour; 3-4 recommended)")
     p.add_argument("--geo_carve_strike_windows", type=int, default=1,
-                   help="[P2a] cross-window strike: a pixel must satisfy the deletion criterion in this many CONSECUTIVE ingest windows before it is really deleted, and any break resets the count (the 12 frames of one window share a DA3 forward pass and a scale, so their votes are correlated and cannot suppress a window-level systematic error). 1=off (default = delete within the window).")
+                   help="cross-window strike: a pixel must satisfy the deletion criterion in this many CONSECUTIVE ingest windows before it is really deleted, and any break resets the count (the 12 frames of one window share a DA3 forward pass and a scale, so their votes are correlated and cannot suppress a window-level systematic error). 1=off (default = delete within the window).")
 
     # === Camera control (lingbot pose) ===
     p.add_argument("--lingbot_pose_path", type=str, default=None,

@@ -2406,7 +2406,7 @@ def compute_kl_grad(
         timesteps=timesteps,
     )
 
-    # with SF_DEBUG_TEACHER_DUMP=<dir>, dump the full set of latents for the first few scorings (to locate BUGFIX#3 H2):
+    # with SF_DEBUG_TEACHER_DUMP=<dir>, dump the full set of latents for the first few scorings (for debugging teacher scoring):
     # whether the teacher x0 follows warp / behaviour in hole regions / the difference from the student x0 -- inspect visually with an offline VAE decode. no env var by default = zero behaviour change.
     import os as _os
     _dump_dir = _os.environ.get("SF_DEBUG_TEACHER_DUMP")

@@ -25,4 +25,7 @@ datasets:
     caption_key: segments
 
 select: [sample]
-ratio:  [1.0000]
+# One epoch has to cover a full update step on every rank: 8 GPUs x train_batch_size x
+# gradient_accumulation_steps is 16 at the largest of the four recipes. A single copy of the clip
+# leaves every rank but the first with an empty dataloader, so the clip is repeated instead.
+ratio:  [32.0000]

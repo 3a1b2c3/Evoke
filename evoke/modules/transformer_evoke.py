@@ -117,7 +117,7 @@ def replace_history_tokens_by_mask(hidden_states, keep_mask, invisible_token, th
     if invisible_token is None:
         raise ValueError(
             "history invisible token mode requires transformer.history_invisible_token to be initialized. "
-            "EVOKE PR-2 doesn't init this Parameter; use mode='filter' (the default) instead."
+            "The released checkpoints do not carry this Parameter; use mode='filter' (the default) instead."
         )
     replace = (~keep).view(1, -1, 1)
     token = invisible_token.to(device=hidden_states.device, dtype=hidden_states.dtype)

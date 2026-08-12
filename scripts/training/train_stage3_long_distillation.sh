@@ -4,7 +4,8 @@
 #   produces: models/train/stage3_long_distillation   (release it as models/evoke/stage3_long_distillation)
 #   init    : models/evoke/stage3_long_distillation
 #   config  : configs/training/stage3_long_distillation.yaml
-#   Default scale: 6 nodes x 8 GPUs = 48 processes
+#   Default scale: 1 node x 8 GPUs. Sequence parallelism (sf_critic_sp_world_size=8) makes one node
+#     a full SP group; more nodes scale the batch, they are not required to run the recipe.
 #   Multi-node: the platform injects RANK / MASTER_ADDR / MASTER_PORT. The node and process
 #     counts are fixed in the accelerate yaml, because CLI overrides are unreliable under the
 #     DEEPSPEED distributed_type -- change ACCELERATE_CONFIG rather than passing
@@ -41,7 +42,7 @@ MACHINE_RANK=${RANK:-0}
 MASTER_ADDR_ARG=${MASTER_ADDR:-127.0.0.1}
 MASTER_PORT_ARG=${MASTER_PORT:-29500}
 
-ACCELERATE_CONFIG=${ACCELERATE_CONFIG:-configs/accelerate/zero2_6x8.yaml}
+ACCELERATE_CONFIG=${ACCELERATE_CONFIG:-configs/accelerate/zero2_1x8.yaml}
 TRAINING_CONFIG=${TRAINING_CONFIG:-configs/training/stage3_long_distillation.yaml}
 
 # Topology constraint: world size must be a multiple of sf_critic_sp_world_size (=8), and one SP

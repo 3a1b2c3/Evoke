@@ -719,7 +719,7 @@ class EvokePipeline(DiffusionPipeline, WanLoraLoaderMixin):
                   f"margin={cfg.get('carve_margin', 0.10)} ref_frames={cfg.get('carve_ref_frames', 24)} "
                   f"min_views={cfg.get('carve_min_views', 1)}(1=delete on any single frame/OR; >=3=multi-view voting)", flush=True)
             if int(cfg.get("carve_strike_windows", 1)) > 1:
-                print(f"[GEO-da3] [P2a] carve cross-window strike ON: needs {cfg.get('carve_strike_windows', 1)} consecutive ingest windows"
+                print(f"[GEO-da3] carve cross-window strike ON: needs {cfg.get('carve_strike_windows', 1)} consecutive ingest windows"
                       f" of confirmation (votes>=min_views) before a real delete; any break resets the count (cures the systematic over-deletion from correlated same-window votes)", flush=True)
         geo_state["da3_K_pix"] = K_pix
         geo_state["da3_pix_stride"] = int(pix_stride)
@@ -2197,7 +2197,7 @@ class EvokePipeline(DiffusionPipeline, WanLoraLoaderMixin):
             assert lingbot_c2ws is not None, "use_geometric_state=True requires lingbot_c2ws (the target poses the Pi3X render needs)"
             assert image is not None, (
                 "use_geometric_state=True requires image (PIL/np/Tensor) as the first chunk source. "
-                "image_latents-only input is not supported yet (Pi3X needs the source pixels). See PR-12 Fix 4."
+                "image_latents-only input is not supported yet (Pi3X needs the source pixels)."
             )
             # Prepare independent c2ws buffer (decoupled from cam_c2ws_dev).
             _geo_c2ws_raw = lingbot_c2ws.unsqueeze(0) if lingbot_c2ws.dim() == 3 else lingbot_c2ws
