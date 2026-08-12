@@ -1,0 +1,33 @@
+# Bundled single-clip sample, so every training recipe runs out of the box with no external dataset.
+#
+# The clip is `examples/data/walking_tour_60s.*` -- 60 s, 1800 frames @30 fps, 1280x720, with a
+# per-frame vipe pose track (cam_c2w + intrinsics, 1800 frames) and a k25 caption file. Resampled to
+# the 24 fps target that gives 1439 latent-source frames, which clears the longest `num_frames` any
+# config here asks for (753 in longvideo_30s_distill.yaml).
+#
+# This is enough to check that a recipe trains -- it is one clip, so it will overfit immediately and
+# tells you nothing about quality. For a real run point `data_yaml_path` at `mix_4src.yaml` (stage 1/2)
+# or `mix_3src_pose.yaml` / `mix_3src_segprompts.yaml` (stage 3), which carry the production source
+# mix, the per-source path quirks and the tuned sampling ratios.
+#
+# caption_key: overall.description -- the whole-clip prompt. Use sample_segprompts.yaml for the
+# segmented-prompt variant that longvideo_30s_distill.yaml needs.
+
+defaults:
+  # short clips that cannot supply num_frames are skipped and resampled; with a single-clip source
+  # there is nothing to fall back to, so a too-short clip surfaces as a loud retry loop rather than
+  # silently training on a truncated window.
+  require_full_length: true
+
+datasets:
+  sample:
+    jsonl: examples/data/cases.jsonl
+    video_dir: examples/data
+    caption_dir: examples/data
+    pose_dir: examples/data
+    source_fps: null              # taken from the jsonl's video_fps (30.0)
+    source_resolution: [720, 1280]
+    caption_key: overall.description
+
+select: [sample]
+ratio:  [1.0000]

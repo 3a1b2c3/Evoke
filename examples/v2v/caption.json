@@ -1,0 +1,127 @@
+{
+  "version": "4.0",
+  "video_path": "sekai_real_walking/Lew0KsNcyzs/Lew0KsNcyzs_0026020_0027820.mp4",
+  "video_name": "Lew0KsNcyzs_0026020_0027820",
+  "overall": {
+    "weather": "cloudy",
+    "time_of_day": "midday",
+    "season": "summer",
+    "lighting": "natural_diffused",
+    "visibility": "clear",
+    "location_type": "mountain",
+    "country": "Switzerland",
+    "city": "unknown",
+    "region_or_district": "unknown",
+    "camera_perspective": "first_person",
+    "camera_motion": "walking",
+    "camera_height": "eye_level",
+    "camera_stability": "handheld_natural",
+    "estimated_speed_kmh": 4.0,
+    "video_style": "real_footage",
+    "visual_quality": "amateur",
+    "description": "A person walks along gravel and paved paths through a lush green alpine village, passing traditional wooden chalets and enjoying panoramic views of a deep valley with dramatic mountain cliffs and a small town below. The overcast sky casts diffused light over the vibrant meadows and forested slopes as the walker ascends stone steps toward more hillside buildings.",
+    "subject_motion": "A pedestrian walks steadily along gravel and paved paths through a lush alpine hillside, pausing to view a valley village before ascending stone steps.",
+    "environment_motion": "Clouds drift slowly across the mountain peaks; the valley village with its chalets and hotels gradually comes into view as the camera turns, then recedes.",
+    "static_scene": "Lush green alpine meadows dotted with traditional dark wooden chalets with red shutters; steep forested and rocky mountain slopes rise in the background under an overcast sky.",
+    "camera_description": "First-person POV at eye level with natural handheld walking bounce; the camera moves forward along paths, turns left to pan across the valley panorama, and ascends stone steps.",
+    "full_prompt": "A pedestrian walks steadily along a narrow gravel path flanked by lush green grass and a traditional dark wooden chalet with red shutters. The trail transitions to smooth pavement as rolling alpine meadows stretch toward distant forested peaks beneath heavy clouds. Turning toward the valley, the pedestrian takes in a sweeping view of a small village nestled below massive rocky mountain faces and dense pine forests. The path continues past a white outbuilding before the pedestrian ascends weathered stone steps toward more chalets on the grassy hillside. <camera>The camera maintains a first-person eye-level perspective with natural handheld bounce, proceeding forward along the paths before turning left to pan across the valley panorama and ascending the stone steps beside the white outbuilding.</camera>",
+    "short_prompt": "A pedestrian walks along gravel and paved paths through a lush alpine village, admiring valley views before climbing stone steps."
+  },
+  "segments": [
+    {
+      "segment_index": 0,
+      "time_range_s": [
+        0.0,
+        12.0
+      ],
+      "subject_motion": "A pedestrian walks steadily forward along a narrow gravel path bordered by tall grass and trees.",
+      "environment_motion": "A wooden chalet with red shutters remains visible on the left while the path curves gently ahead; distant green hills and mountain slopes sit static under cloudy skies.",
+      "static_scene": "A gravel walking path cuts through lush green grass; a traditional dark wooden alpine chalet with red shutters and a wooden fence stands on the left, framed by dense leafy trees.",
+      "camera_description": "First-person POV at eye level, moving straight forward along the gravel path with natural handheld walking stability.",
+      "camera_path": "straight",
+      "full_prompt": "A pedestrian walks steadily along a narrow gravel path bordered by vibrant green grass and dense leafy trees. A traditional dark wooden chalet with red shutters and a wooden fence remains visible on the left as the path curves gently toward open alpine meadows. Distant forested mountain slopes rise under a heavy overcast sky. <camera>The camera maintains a first-person eye-level perspective, moving straight forward along the gravel trail with natural handheld walking motion.</camera>",
+      "short_prompt": "A pedestrian walks steadily along a gravel path past a traditional wooden chalet in a lush alpine meadow."
+    },
+    {
+      "segment_index": 1,
+      "time_range_s": [
+        12.0,
+        20.0
+      ],
+      "subject_motion": "A pedestrian turns left onto a paved path and continues walking forward along a grassy hillside.",
+      "environment_motion": "A small white building with a red roof appears on the right; the view opens to reveal a valley with scattered trees and distant structures.",
+      "static_scene": "A smooth paved path cuts through bright green grass on a hillside; a low white outbuilding with a reddish roof sits on the right, with forested mountains visible in the distance.",
+      "camera_description": "First-person POV at eye level, turning left onto the paved path and continuing forward with natural handheld movement.",
+      "camera_path": "turn_left",
+      "full_prompt": "A pedestrian turns left onto a smooth paved path that cuts through bright green grass on an alpine hillside. A small white outbuilding with a reddish roof appears on the right as the trail continues forward. The surrounding landscape opens to reveal distant forested mountains and scattered valley structures under cloudy skies. <camera>The camera maintains a first-person eye-level perspective, turning left onto the paved trail and continuing forward with natural handheld walking motion.</camera>",
+      "short_prompt": "A pedestrian turns onto a paved hillside path beside a white outbuilding with a red roof in the mountains."
+    },
+    {
+      "segment_index": 2,
+      "time_range_s": [
+        20.0,
+        32.0
+      ],
+      "subject_motion": "A pedestrian continues walking forward while turning to look left at the expanding valley view.",
+      "environment_motion": "The panoramic vista of a village nestled in the valley below gradually unfolds, with large multi-story buildings and chalets becoming visible; massive rocky mountain cliffs dominate the background.",
+      "static_scene": "A deep alpine valley filled with a small village of chalets and larger buildings; towering rocky mountain faces with patches of forest rise steeply on the far side, partially obscured by low clouds.",
+      "camera_description": "First-person POV at eye level, moving forward while turning left to pan across the sweeping valley and mountain panorama; natural handheld stability.",
+      "camera_path": "turn_left",
+      "full_prompt": "A pedestrian continues along the path as a breathtaking valley panorama gradually unfolds to the left. A small village of chalets and larger buildings nestles in the green valley below, framed by massive rocky mountain cliffs and dense forests that rise toward low-hanging clouds. The scale of the alpine landscape dominates the view as more of the village rooftops come into sight. <camera>The camera maintains a first-person eye-level perspective, moving forward while turning left to sweep across the expansive valley and mountain vista with natural handheld motion.</camera>",
+      "short_prompt": "A pedestrian admires a sweeping valley village view surrounded by massive rocky alpine cliffs and dense green forests."
+    },
+    {
+      "segment_index": 3,
+      "time_range_s": [
+        32.0,
+        42.0
+      ],
+      "subject_motion": "A pedestrian walks forward along the paved path, passing the white outbuilding on the right.",
+      "environment_motion": "The village and mountain view recedes to the left as the path continues; the white building with its red roof and dark wooden upper trim remains prominent on the right.",
+      "static_scene": "A paved path curves through lush green grass on a hillside; the white outbuilding with a red roof and dark wooden trim sits on the right, with forested mountain ridges visible ahead.",
+      "camera_description": "First-person POV at eye level, moving straight forward along the paved path past the white building; natural handheld walking motion.",
+      "camera_path": "straight",
+      "full_prompt": "A pedestrian walks forward along the paved hillside path as the valley view recedes. The white outbuilding with a red roof and dark wooden trim remains prominent on the right while the trail curves gently ahead. Lush green grass and scattered trees surround the path, with forested mountain ridges visible in the distance under cloudy skies. <camera>The camera maintains a first-person eye-level perspective, moving straight forward along the paved trail with natural handheld walking stability.</camera>",
+      "short_prompt": "A pedestrian continues along a paved path past a white hillside building in the scenic alpine countryside near the mountains."
+    },
+    {
+      "segment_index": 4,
+      "time_range_s": [
+        42.0,
+        50.0
+      ],
+      "subject_motion": "A pedestrian walks forward along the path toward a set of stone steps beside the building.",
+      "environment_motion": "The corner of the white building passes by on the right; stone steps come into view ahead as the path ends.",
+      "static_scene": "A narrow paved path runs alongside the white outbuilding with dark wooden roof overhangs; stone steps begin at the path's end, leading upward through bright green grass.",
+      "camera_description": "First-person POV at eye level, moving straight forward along the building's edge toward the stone steps; natural handheld motion.",
+      "camera_path": "straight",
+      "full_prompt": "A pedestrian walks forward along the narrow path running alongside the white outbuilding with dark wooden roof overhangs. Stone steps come into view at the path's end, leading upward through bright green grass toward more chalets and trees. The surrounding alpine meadows remain lush and vibrant under the overcast sky. <camera>The camera maintains a first-person eye-level perspective, moving straight forward along the building's edge with natural handheld walking motion.</camera>",
+      "short_prompt": "A pedestrian approaches weathered stone steps beside a white building in a grassy alpine setting near the path."
+    },
+    {
+      "segment_index": 5,
+      "time_range_s": [
+        50.0,
+        58.0
+      ],
+      "subject_motion": "A pedestrian ascends a short flight of stone steps and continues forward onto a grassy slope.",
+      "environment_motion": "The white building's roof and gutter pass close by on the right; the view opens to show more grassy hills, scattered chalets, and tall trees ahead.",
+      "static_scene": "Weathered stone steps cut through tall green grass on a hillside; traditional dark wooden chalets and large leafy trees stand on the upper slope, with forested mountains in the background.",
+      "camera_description": "First-person POV at eye level, ascending the stone steps and continuing forward onto the grassy slope; natural handheld motion with slight upward tilt.",
+      "camera_path": "ascend",
+      "full_prompt": "A pedestrian ascends a short flight of weathered stone steps cutting through tall green grass on the alpine hillside. The white building's roof and gutter pass close by on the right as the steps reach the top. More traditional dark wooden chalets and large leafy trees stand on the upper grassy slope ahead, with forested mountains visible in the distance. <camera>The camera maintains a first-person eye-level perspective, ascending the stone steps and continuing forward onto the grassy slope with natural handheld motion.</camera>",
+      "short_prompt": "A pedestrian climbs stone steps through a grassy hillside toward traditional alpine chalets and tall leafy green trees."
+    }
+  ],
+  "annotation_meta": {
+    "model": "Kimi-K2.6",
+    "resolution": 360,
+    "fps": 1,
+    "processed_at": "2026-05-06T17:50:00.390018",
+    "total_vlm_calls": 1,
+    "elapsed_s": 176.8,
+    "merged_mode": true,
+    "overall_errors": [],
+    "segments_errors": []
+  }
+}

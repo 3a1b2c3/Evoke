@@ -1,0 +1,68 @@
+# Pinned to the environment these weights were trained and evaluated in (CUDA 12.4, H200).
+# Versions below are what is actually installed there, not aspirational ones -- torch and
+# deepspeed in particular are load-bearing:
+#   * torch 2.4        -- the attention path assumes 2.4 SDPA semantics
+#   * deepspeed 0.14.5 -- training rides ZeRO-2; the manual gradient-reduction interleaving in
+#                         train_evoke.py is written against this version's stage_1_and_2 internals
+#   * flash-attn       -- the attention backend actually selected at runtime (FA2)
+#
+# torch / torchvision carry a +cu124 local version; install them from the CUDA 12.4 index first:
+#   pip install torch==2.4.0 torchvision==0.19.0 --index-url https://download.pytorch.org/whl/cu124
+#   pip install -r requirements.txt
+
+torch==2.4.0
+torchvision==0.19.0
+flash-attn==2.8.3
+
+diffusers==0.39.0.dev0
+transformers==5.3.0
+accelerate==1.12.0
+deepspeed==0.14.5
+peft==0.19.1
+safetensors==0.8.0rc0
+huggingface-hub==1.15.0
+
+numpy==1.26.4
+einops==0.8.1
+omegaconf==2.3.0
+opencv-python-headless==4.13.0.92
+pillow==12.1.1
+imageio==2.37.2
+imageio-ffmpeg==0.6.0
+video-reader-rs==0.4.1
+ftfy==6.3.1
+regex==2026.1.15
+sentencepiece==0.2.1
+packaging==25.0
+wandb==0.24.2
+
+# Imported directly by first-party code and previously only present as transitive dependencies of
+# torch / diffusers, so a resolver was free to drop or float them:
+#   pyyaml     evoke/dataset/evoke_data/data_config.py   (the multi-dataset config parser)
+#   scipy      evoke/dataset/evoke_data/unified_dataset.py, evoke/utils/ev_validation.py (pose math)
+#   pandas     evoke/dataset/dataloader_mp4_dist.py
+#   torchdata  train_evoke.py (StatefulDataLoader)
+#   triton     evoke/modules/evoke_kernels/* (the fused rmsnorm / rope kernels)
+#   tqdm       evoke/pipelines/pipeline_evoke.py
+#   requests   evoke/videoalign/vision_process.py
+pyyaml==6.0.3
+scipy==1.15.3
+pandas==2.3.3
+torchdata==0.11.0
+triton==3.0.0
+tqdm==4.67.1
+requests==2.32.5
+
+# Optional, all behind a try/except or an availability check -- install only if you want that path:
+#   xformers / sageattention / flash_attn_3 / kernels   alternative attention backends
+#   bitsandbytes                                       8-bit optimizers
+#   prodigyopt                                         the Prodigy optimizer
+#   torch_xla                                          TPU
+# None of them are installed in the reference environment; the code selects FA2 at runtime.
+
+# Runtime deps of the depth backend for warp rendering (Depth-Anything-3). The DA3 code itself is
+# vendored under evoke/third_party/da3 (Apache-2.0, see its PROVENANCE.md) and is not on PyPI;
+# these two are imported by it but by nothing else here. Weights are a separate download: put the
+# da3-giant checkpoint under models/DA3 (or set EVOKE_DA3_WEIGHTS).
+evo==1.36.5
+addict==2.4.0

@@ -1,0 +1,1 @@
+{"name": "i2v_coral_reef", "image_path": "examples/i2v/image.jpg", "pose_path": "examples/i2v/pose.npz", "prompt_path": "examples/i2v/prompt.txt", "pose_fps": 30, "pose_source_resolution": [720, 1280], "pose_type": "vipe"}

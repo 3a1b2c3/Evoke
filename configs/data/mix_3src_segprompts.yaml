@@ -1,0 +1,67 @@
+# Production source mix. The jsonl/video/caption/pose roots below are PLACEHOLDERS
+# (`/path/to/world_model/...`) -- point them at your own copy of the sources before use. For a self-contained run use sample_segprompts.yaml,
+# which points at the single clip bundled under examples/data/.
+#
+# Segmented-prompt version of mix_3src_pose.yaml
+# (, table 9).
+#   The only substantive difference: caption_key = segments (the 12s-granularity segments of the k25
+#   caption files, one full_prompt per segment; caption_operator gained SEGMENTS_LIST_KEYS parsing
+#   that produces segment_prompts for the use_full_rollout_interleave mode to consume). All three
+#   sources' caption files have been verified to contain segments/merged_segments.
+#   10s clip x 12s segment granularity -> ~83% of samples contain a prompt switch point.
+#   The pose fields are kept (P2a does not use warp/pose, but keeping the loader structure identical
+#   saves trouble).
+# Aligned with the teacher's own training config: short_prompt +
+#   strip_camera_tags + the upstream mixing ratio (see below).
+
+defaults:
+  require_full_length: true
+  # Text field for the segment prompt, plus camera-tag stripping -- aligned with the
+  #   EvokeTeacher teacher's own training config: during fine-tuning the teacher (high step-900 /
+  #   low step-1900) only ever saw tag-free short_prompt of 78-147 characters; before this change we
+  #   hardcoded full_prompt (471-765 characters) and did not strip <camera>...</camera>, so the text
+  #   conditioning was OOD.
+  segment_text_key: short_prompt
+  strip_camera_tags: true
+
+datasets:
+  scene_balanced:
+    jsonl: /path/to/world_model/Annotation/_scene_pose_balance/scene_pose_balance.merged.fixed.merged_caption.jsonl
+    video_dir: /path/to/world_model/Video
+    caption_dir: /path/to/world_model/Annotation
+    pose_dir: /path/to/world_model/Annotation
+    source_fps: null
+    source_resolution: [720, 1280]
+    caption_key: segments
+
+  gameverse:
+    jsonl: /path/to/world_model/Annotation/gameverse/gameverse_youtube_gameplay_with_static_gamestyle.merged_caption.ocr_pass.jsonl
+    video_dir: /path/to/world_model/Video
+    caption_dir: /path/to/world_model/Annotation
+    pose_dir: /path/to/world_model/Annotation
+    source_fps: null
+    source_resolution: [720, 1280]
+    caption_key: segments
+    fallback_default_intrinsic: true
+    path_replace:
+      video:  {'Video/': ''}
+      prompt: {'Annotation/': ''}
+      pose:   {'Annotation/': ''}
+
+  dl3dv:
+    jsonl: /path/to/world_model/Annotation/dl3dv/dl3dv.merged_caption.jsonl
+    video_dir: /path/to/world_model/Video
+    caption_dir: /path/to/world_model/Annotation
+    pose_dir: /path/to/world_model/Annotation
+    source_fps: null
+    source_resolution: [720, 1280]
+    caption_key: segments
+
+select: [scene_balanced, gameverse, dl3dv]
+# Mixing ratio aligned with the upstream long sources 1402:1998:2000 -> effective
+#   25.96/37.00/37.04 (previously 80.0/14.3/5.7).
+#   We take the proportional variant that "keeps a full pass over scene": unique-video coverage is
+#   100% for all three sources. The alternative [0.0663,0.1133,1.0] is proportionally equivalent, but
+#   would lock scene/gameverse permanently into a fixed random subset of 6.6%/11.3%
+#   (SubsampledDataset only draws once, at construction time).
+ratio:  [1.0000, 1.7106, 15.0929]

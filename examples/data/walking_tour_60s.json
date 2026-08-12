@@ -1,0 +1,145 @@
+{
+  "version": "4.0",
+  "video_path": "walking_tour_60s.mp4",
+  "video_name": "walking_tour_60s",
+  "overall": {
+    "weather": "clear",
+    "time_of_day": "midday",
+    "season": "summer",
+    "lighting": "natural_direct",
+    "visibility": "clear",
+    "location_type": "urban_street",
+    "country": "France",
+    "city": "Nice",
+    "region_or_district": "unknown",
+    "camera_perspective": "first_person",
+    "camera_motion": "walking",
+    "camera_height": "eye_level",
+    "camera_stability": "stabilized",
+    "estimated_speed_kmh": 4.0,
+    "video_style": "real_footage",
+    "visual_quality": "amateur",
+    "description": "A first-person walking tour through a sunny, narrow European street lined with colorful buildings, outdoor cafes, and shops. The pedestrian passes by restaurants including one named 'Les Chimeurs,' navigates through other walkers, and continues onto a striking bright blue painted path running down the center of the old town street.",
+    "subject_motion": "A pedestrian walks steadily forward down a sunlit narrow city street, passing outdoor cafes and other pedestrians.",
+    "environment_motion": "Other pedestrians walk toward and away from the camera, some pausing at cafe tables; shadows shift under the bright midday sun.",
+    "static_scene": "Colorful multi-story buildings with shutters line both sides of the narrow stone street; outdoor cafe tables, chairs, and potted trees occupy the sidewalks; signage in French is displayed above shopfronts.",
+    "camera_description": "First-person POV at eye level, moving smoothly forward along the street center; stabilized walking motion with slight natural bob; wide-angle lens captures the full street width and building facades.",
+    "full_prompt": "A pedestrian walks steadily forward through a sunlit, narrow old town street in France. Colorful buildings with shutters in shades of yellow, orange, and red line both sides, while outdoor cafe tables and chairs fill the sidewalks. Other pedestrians stroll in both directions, some pausing near shopfronts, as bright midday sunlight casts sharp shadows across the stone pavement. <camera>The camera maintains a smooth first-person POV at eye level, advancing straight down the street center with a stabilized walking gait and a wide-angle view of the facades.</camera>",
+    "short_prompt": "A pedestrian walks down a sunlit narrow street lined with colorful buildings and outdoor cafes in a French old town."
+  },
+  "segments": [
+    {
+      "segment_index": 0,
+      "time_range_s": [
+        0.0,
+        12.0
+      ],
+      "subject_motion": "A pedestrian walks steadily forward past a yellow restaurant facade with stacked chairs and a potted tree, moving toward a narrower section of street.",
+      "environment_motion": "A few distant pedestrians move along the sidewalk; the camera passes by outdoor cafe seating and a thatched-roof bar structure.",
+      "static_scene": "A yellow restaurant building with arched windows and a black-and-white striped awning sits on the left; the ground is grey stone paving; construction barriers occupy the right edge.",
+      "camera_description": "First-person POV at eye level, moving straight forward along the sidewalk past storefronts; smooth stabilized walking motion.",
+      "camera_path": "straight",
+      "full_prompt": "A pedestrian walks steadily forward along a sunlit narrow street, passing a bright yellow restaurant with arched windows and stacked outdoor chairs. A large potted tree stands near the entrance, and a thatched-roof bar structure appears on the right. A few other people stroll in the distance near the shopfronts. <camera>The camera maintains a smooth first-person POV at eye level, advancing straight forward past the storefronts with a stabilized walking gait.</camera>",
+      "short_prompt": "A pedestrian walks past a yellow restaurant and outdoor seating along a sunlit narrow street."
+    },
+    {
+      "segment_index": 1,
+      "time_range_s": [
+        12.0,
+        28.0
+      ],
+      "subject_motion": "A pedestrian continues walking forward through a busier section of the narrow street, navigating between oncoming pedestrians.",
+      "environment_motion": "Several pedestrians walk toward the camera—a man in a white shirt, a woman with a yellow bag and sunglasses, and others—while some people sit at outdoor cafe tables under large umbrellas; a red real-estate shopfront and a bricolage store pass by on the left.",
+      "static_scene": "Tall, tightly packed buildings in warm reds, oranges, and yellows with shuttered windows line both sides; the ground is grey stone paving; cafe tables with umbrellas occupy the right sidewalk.",
+      "camera_description": "First-person POV at eye level, moving straight forward through the pedestrian street; smooth and steady with slight lateral adjustments as people pass.",
+      "camera_path": "straight",
+      "full_prompt": "A pedestrian continues forward through a bustling narrow street lined with tightly packed buildings painted in warm reds, oranges, and yellows. Several people walk toward the camera, including a man in a white shirt and a woman carrying a yellow bag, while others relax at cafe tables under large umbrellas. A red real-estate office and a bricolage shop with a metal security gate slide past on the left. <camera>The camera holds a smooth first-person POV at eye level, advancing straight through the crowd with a steady walking rhythm.</camera>",
+      "short_prompt": "A pedestrian walks through a busy narrow street lined with colorful buildings and outdoor cafes, passing other walkers."
+    },
+    {
+      "segment_index": 2,
+      "time_range_s": [
+        28.0,
+        40.0
+      ],
+      "subject_motion": "A pedestrian walks forward as the ground transitions from grey stone to a vivid blue painted path, continuing down the center of the street.",
+      "environment_motion": "A woman in a white top and jeans walks toward the camera, followed by a woman in athletic wear; distant pedestrians move along the blue path ahead; shopfronts and potted trees line the route.",
+      "static_scene": "The street center is covered in bright blue paint bordered by stone curbs; buildings in beige, white, and yellow with green shutters flank both sides; a green-awning restaurant sits on the left corner.",
+      "camera_description": "First-person POV at eye level, moving straight forward down the center of the street onto the blue surface; smooth stabilized motion.",
+      "camera_path": "straight",
+      "full_prompt": "A pedestrian steps onto a striking bright blue painted path that runs down the center of the narrow street. A woman in a white top and jeans approaches from the distance, followed by a woman in athletic wear and shorts walking toward the camera. The buildings on either side shift to lighter tones of beige and yellow with green shutters, and a restaurant with a green striped awning marks the corner. <camera>The camera maintains a smooth first-person POV at eye level, advancing straight forward along the vivid blue path.</camera>",
+      "short_prompt": "A pedestrian walks down a bright blue painted path in the center of a narrow street lined with shops and cafes."
+    },
+    {
+      "segment_index": 3,
+      "time_range_s": [
+        40.0,
+        54.0
+      ],
+      "subject_motion": "A pedestrian continues walking steadily forward along the blue path toward a distant tree-lined opening.",
+      "environment_motion": "A woman carrying shopping bags walks toward the camera and passes by, followed by two women walking side by side; transparent wind barriers enclose outdoor seating areas on the left; a bicycle leans against a pole on the right.",
+      "static_scene": "The long blue path lies ahead between multi-story buildings; transparent glass or plastic barriers enclose cafe patios on the left; potted trees and black metal railings border the edges; a distant tree-lined opening is visible at the end of the street.",
+      "camera_description": "First-person POV at eye level, moving straight forward along the blue path; smooth stabilized walking motion with a wide view of the receding street.",
+      "camera_path": "straight",
+      "full_prompt": "A pedestrian continues along the vivid blue path that extends straight through the heart of the old town. A woman with shopping bags approaches and passes by, followed by two women walking together and chatting. Transparent wind barriers enclose outdoor seating areas on the left, and a bicycle rests against a pole on the right sidewalk. The street narrows toward a distant green tree line under the clear blue sky. <camera>The camera holds a smooth first-person POV at eye level, advancing straight forward down the long blue path with a steady, stabilized gait.</camera>",
+      "short_prompt": "A pedestrian walks along a bright blue path through a narrow old town street, passing shoppers and outdoor seating areas."
+    }
+  ],
+  "annotation_meta": {
+    "model": "Kimi-K2.6",
+    "resolution": 360,
+    "fps": 1,
+    "processed_at": "2026-05-05T02:44:15.917170",
+    "total_vlm_calls": 1,
+    "elapsed_s": 115.79,
+    "merged_mode": true,
+    "overall_errors": [],
+    "segments_errors": []
+  },
+  "merged_segments": [
+    {
+      "segment_index": 0,
+      "time_range_s": [
+        0.0,
+        40.0
+      ],
+      "duration_s": 40.0,
+      "source_segment_indices": [
+        0,
+        1,
+        2
+      ],
+      "subject_motion": "A pedestrian walks steadily forward through a narrow street, navigating through crowds of people and eventually moving onto a bright blue painted path.",
+      "environment_motion": "Various pedestrians walk in both directions, including individuals in white shirts and athletic wear, while others sit at outdoor cafe tables under umbrellas.",
+      "static_scene": "A sunlit European old town street lined with colorful buildings in yellow, red, and orange, featuring outdoor cafes, shopfronts with awnings, and grey stone paving that transitions into a vivid blue central path.",
+      "camera_description": "First-person POV at eye level, performing a smooth forward dolly motion with slight lateral adjustments to avoid pedestrians.",
+      "camera_path": "straight",
+      "full_prompt": "Real footage amateur style. <camera>The camera is a first-person POV at eye level, moving in a smooth forward dolly motion.</camera> A pedestrian walks past a yellow restaurant facade with a striped awning and a thatched-roof bar structure on a sunlit narrow street. <camera>The camera continues moving straight forward with slight lateral adjustments as people pass.</camera> The path becomes busier, passing by red and orange buildings and outdoor cafes where people sit under large umbrellas. <camera>The camera maintains its steady forward progression.</camera> The grey stone paving then transitions into a vivid blue painted path running down the center of the street, flanked by beige and white buildings with green shutters and potted trees.",
+      "short_prompt": "A first-person walking tour through a sunny European street with colorful buildings and cafes, ending on a bright blue painted path."
+    },
+    {
+      "segment_index": 1,
+      "time_range_s": [
+        40.0,
+        54.0
+      ],
+      "duration_s": 14.0,
+      "source_segment_indices": [
+        3
+      ],
+      "subject_motion": "A pedestrian walks steadily forward along a bright blue path toward a distant tree-lined opening.",
+      "environment_motion": "A woman with shopping bags walks toward the camera and passes by, followed by two women walking side by side.",
+      "static_scene": "A narrow old town street features multi-story buildings and a long blue path running down the center. Transparent barriers enclose outdoor cafe seating on the left, while potted trees, black metal railings, and a bicycle leaning against a pole line the edges.",
+      "camera_description": "First-person POV at eye level, performing a smooth stabilized forward dolly motion along the path.",
+      "camera_path": "straight",
+      "full_prompt": "Real footage amateur style. <camera>The camera is a first-person POV at eye level performing a smooth stabilized forward dolly.</camera> A pedestrian walks steadily along a bright blue path that stretches through a narrow old town street. <camera>The camera continues moving straight forward.</camera> A woman carrying shopping bags walks toward the viewer and passes by, followed by two women walking side by side. Transparent glass barriers enclose outdoor cafe patios on the left, while potted trees and black metal railings border the edges of the path. A bicycle leans against a pole on the right as the street leads toward a distant tree-lined opening under bright sunlight.",
+      "short_prompt": "A first-person view of a pedestrian walking along a bright blue path through a sunny European old town street."
+    }
+  ],
+  "merge_meta": {
+    "n_source_segments": 4,
+    "n_merged_segments": 2,
+    "merge_max_sec": 40.0,
+    "llm_model": "gemma-4-31B-it"
+  }
+}

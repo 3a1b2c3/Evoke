@@ -1,0 +1,28 @@
+# Segmented-prompt version of sample.yaml, for the recipes that consume per-section prompts
+# (use_full_rollout_interleave). Same bundled clip, different caption field.
+#
+# caption_key: segments reads the caption file's per-segment entries instead of the whole-clip
+# description; the bundled clip carries 4 of them. segment_text_key / strip_camera_tags match what the
+# teacher was fine-tuned on -- tag-free short_prompt -- so the text conditioning is not OOD. See the
+# header of mix_3src_segprompts.yaml for why those two matter.
+#
+# One clip is enough to exercise the segmented-prompt path end to end, not to train anything useful.
+# Point `data_yaml_path` at mix_3src_segprompts.yaml for a real run.
+
+defaults:
+  require_full_length: true
+  segment_text_key: short_prompt
+  strip_camera_tags: true
+
+datasets:
+  sample:
+    jsonl: examples/data/cases.jsonl
+    video_dir: examples/data
+    caption_dir: examples/data
+    pose_dir: examples/data
+    source_fps: null              # taken from the jsonl's video_fps (30.0)
+    source_resolution: [720, 1280]
+    caption_key: segments
+
+select: [sample]
+ratio:  [1.0000]

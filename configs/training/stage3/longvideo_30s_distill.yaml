@@ -1,0 +1,355 @@
+output_dir: models/train/stage3_long_distillation
+logging_dir: logs
+seed: 49
+
+report_to:
+  tracker_name: evoke
+  wandb_name: stage3_2
+  report_to: wandb
+
+data_config:
+  # dataset
+  use_stage1_dataset: true
+  use_stage3_dataset: false
+  use_multi_dataset: true
+  data_yaml_path: configs/data/sample_segprompts.yaml   # bundled single-clip sample; swap in configs/data/mix_3src_segprompts.yaml for a real run
+  force_rebuild: true
+
+  # clip geometry
+  num_frames: 753
+  target_fps: 24
+  single_res: true
+  single_height: 384
+  single_width: 640
+  use_full_rollout_interleave: true
+
+  # loader
+  use_shuffle: true
+  dataloader_num_workers: 2
+  prefetch_factor: 1
+  pin_memory: true
+  persistent_workers: false
+  # Re-draw each `ratio` entry's random subset every epoch (fractional-ratio sources would otherwise
+  #   stay frozen on one subset). Seed = f(seed, epoch, part_id), rank-independent so an SP group agrees
+  #   on the clip; requires the persistent_workers: false above (validator enforces it).
+  resample_ratio_each_epoch: true
+
+  # prompt
+  caption_dropout_p: 0
+  id_token: ''
+  negative_prompt: >-
+    oversaturated, garish colors, color shift, hue shift, color drift, inconsistent colors, color cast, color banding, flickering, jittery motion, abrupt transitions, sudden scene changes, temporal inconsistency, static, still picture, blurred details, subtitles, style, works, paintings, images, extra fingers, poorly drawn hands, poorly drawn faces, deformed, disfigured, misshapen limbs, fused fingers, three legs, many people in the background, walking backwards, messy background
+
+model_config:
+  # student
+  pretrained_model_name_or_path: models/evoke-base
+  transformer_model_name_or_path: models/evoke/stage2_few_step_training
+  subfolder: transformer
+  load_checkpoints_custom: false
+  load_dcp: false
+
+  # teacher (real score)
+  real_score_arch: evoke_teacher
+  evoke_teacher:
+    high_dir: models/evoke/evoke_teacher/high_noise
+    low_dir: models/evoke/evoke_teacher/low_noise
+    boundary: 0.9
+    chunk_size: 9
+    num_select_frames: 1
+    single_expert: null
+    # Keep only the routed expert on GPU; both resident is +28GB -> H200 wall. Required whenever
+    #   single_expert is null, and by sf_evoke_teacher_shared_host_base.
+    offload: true
+    # null = full band, so t routes by boundary; a value caps scoring t below it.
+    score_timestep_max: null
+
+  # LoRA
+  lora_rank: 128
+  lora_alpha: 128.0
+  lora_dropout: 0.0
+  lora_layers: all-linear
+  lora_exclude_modules:
+  - down
+  - up
+  train_norm_layers: false
+  critic_lora_rank: 128
+  critic_lora_alpha: 128.0
+  critic_lora_dropout: 0.0
+
+  # VAE
+  enable_slicing: true
+  enable_tiling: true
+  upcast_vae: true
+
+  # geometric state
+  geometric_state:
+    enabled: true
+    warp_stage0_only: true
+    rope_alignment: true
+    prefix_idx_mode: zero
+    warp_rope_mode: overlap_noise
+    warp_rope_noise_center_align: false
+    warp_keep_clean_anchor: false
+    visibility_aware_noise: true
+    warp_noise_sigma_invisible: 1.0
+    warp_noise_sigma_min: 0.0
+    warp_noise_sigma_max: 0.135
+    visible_token_threshold: 0.5
+    geo_invisible_history_noise: false
+    geo_warp_plucker_enabled: false
+    warp_error_inject_enabled: false
+    error_inject_prob: 0.0
+    short_tier_noise:
+      enabled: false
+    warp_token_drop:
+      enabled: false
+    warp_saturation_corrupt:
+      enabled: false
+    cloud_warp:
+      enabled: true
+      # Depth-estimation backend behind the shared FrameBank / render pipeline.
+      #   vigeo (default) = ViGeo, image-only: it takes no pose or intrinsics input, so its depth is
+      #                     up-to-scale and gets rescaled by the Umeyama scale against the GT trajectory.
+      #                     Source is vendored in-repo (evoke/third_party/vigeo); only the weights need
+      #                     provisioning into models/ViGeo1.1 (gitignored).
+      #   da3             = DepthAnything3, pose-conditioned (GT extrinsics + intrinsics are network
+      #                     inputs). To go back, set backend: da3 and uncomment the da3 block below.
+      # Orthogonal to render_mode below, which selects the renderer, not the geometry model.
+      backend: vigeo
+      vigeo:
+        weights: models/ViGeo1.1
+        process_res: 644
+        mode: chunk               # hold the kv-cache across ingest windows: one stream, one scale
+        scale_mode: anchor        # lock the median Umeyama scale of the first anchor_windows
+        anchor_windows: 4
+        cache_keep_frames: 6
+        intr_source: gt           # GT K rescaled to the output resolution
+        conf_transform: exp       # ViGeo conf is raw logits; exp maps it positive
+      # da3:
+      #   ckpt_path: models/DA3
+      #   process_res: 644
+      update_frames_per_chunk: 12
+      render_mode: backward_zbuf
+      bw_fill_iters: 12
+      nsrc: 8
+      nearby_window: 16
+      multisrc_splat: 1
+      dens_thresh: 0.45
+      dens_win: 7
+      recall_min_cov: 0.5
+      recall_margin: 0.15
+
+  camera_control:
+    enabled: false
+
+validation_config:
+  validation_steps: 100000
+  first_step_valid: false
+  num_validation_videos: 1
+  validation_height: 384
+  validation_width: 640
+  validation_max_num_frames: 33
+  # null -> the prompt comes from the validation clip's own caption rather than being pinned here.
+  validation_prompts: null
+  # The reference clip shipped in examples/v2v: 1280x720, 30 fps, 40.0s, with pose.npz covering
+  #   60s (intrinsics [1800,3,3] + cam_c2w [1800,4,4]); the window below selects [10s, 20s].
+  validation_videos:
+  - examples/v2v/clip.mp4
+  validation_video_seconds: 10.0
+  validation_video_start_seconds: 10.0
+  validation_pose_paths:
+  - examples/v2v/pose.npz
+  # Resolution/fps/type describe the SOURCE the pose was solved on, and they rescale the intrinsics.
+  #   Getting them wrong changes the camera translation silently -- these match the shipped pose.npz
+  #   (principal point 640/360 => 1280x720) and examples/v2v/cases.jsonl (vipe, 30 fps).
+  validation_pose_source_resolution:
+  - 720
+  - 1280
+  validation_pose_source_fps: 30
+  validation_pose_type: vipe
+  validation_pose_max_rotation_deg: 0.0
+  use_geometric_state: true
+  validation_guidance_scale: 1.0
+  validation_latent_window_size:
+  - 9
+  num_inference_steps: 3
+  stage2_simulated_inference_steps:
+  - 1
+  - 1
+  - 1
+  use_dynamic_shifting: false
+  time_shift_type: exponential
+  use_kv_cache: false
+
+training_config:
+  trainable_models:
+  - lora
+  max_train_steps: 1000000
+  train_batch_size: 1
+  gradient_accumulation_steps: 1
+
+  # optimizer
+  learning_rate: 2.0e-06
+  critic_learning_rate: 4.0e-07
+  lr_scheduler: constant
+  lr_warmup_steps: 500
+  optimizer: adamw
+  adam_beta1: 0.0
+  adam_beta2: 0.999
+  adam_weight_decay: 0.001
+  adam_epsilon: 1.0e-08
+  max_grad_norm: 10.0
+  max_grad_norm_critic: 10.0
+  use_ema: false
+  use_ema_validation: false
+
+  # runtime / memory
+  mixed_precision: bf16
+  allow_tf32: false
+  gradient_checkpointing: true
+  offload: false
+  dmd_is_low_vram_mode: false
+  is_gan_low_vram_mode: false
+  dmd_is_offload_grad: false
+  vae_decode_type: persistent
+  dmd_generator_deepspeed_config: configs/deepspeed/zero2_dualteacher_gen_sp.json
+  dmd_critic_deepspeed_config: configs/deepspeed/zero2_dualteacher_critic_sp.json
+  # Encode only the GT frames a step needs (33, or 36j+33 on GEO steps). Wan-VAE is causal in time, so
+  #   this is bit-identical to slicing the full encode (SF_GT_VERIFY=1 checks it); ~21% of the volume.
+  sf_gt_encode_on_demand: true
+
+  # checkpointing
+  checkpointing_steps: 50
+  checkpoints_total_limit: 20
+  save_checkpoints_custom: true
+  resume_from_checkpoint: null
+  upcast_before_saving: false
+
+  # logging
+  log_iters: 5
+  no_visualize: true
+
+  # stage-1 history / stage-2 pyramid
+  is_enable_stage1: true
+  history_sizes:
+  - 16
+  - 2
+  - 1
+  latent_window_size:
+  - 9
+  is_enable_stage2: true
+  is_navit_pyramid: true
+  stage2_num_stages: 3
+  stage2_timestep_shift: 1.0
+  stage2_scheduler_gamma: 0.3333333333333333
+  stage2_stage_range:
+  - 0
+  - 0.3333333333333333
+  - 0.6666666666666666
+  - 1
+  stage2_sample_ratios:
+  - 1
+  - 1
+  - 1
+  stage2_warp_compression_mode: fixed_mem
+  efficient_sample: false
+  weighting_scheme: none
+  use_dynamic_shifting: false
+  time_shift_type: exponential
+
+  # conditioning
+  use_geometric_state: true
+  geo_condition_t2v_ratio: 0.0
+  geo_condition_i2v_ratio: 0.0
+  zero_history_timestep: true
+  guidance_cross_attn: true
+  restrict_self_attn: false
+  is_amplify_history: false
+  is_random_drop: false
+  corrupt_model_input: false
+  corrupt_history: false
+  use_error_recycling: false
+  has_multi_term_memory_patch: true
+  is_train_lora_multi_term_memory_patchg: true
+
+  # DMD
+  is_train_dmd: true
+  is_use_gan: false
+  is_use_reward_model: false
+  dfake_gen_update_ratio: 1
+  dmd_denoising_step_list:
+  - 1000
+  - 666
+  - 333
+  dmd_timestep_shift: 5.0
+  dmd_score_timestep_max: null
+  dmd_score_timestep_min: 0
+  critic_score_timestep_max: null
+  critic_score_timestep_min: 0
+  num_critic_input_frames: 180
+  dmd_score_skip_first_chunk: true
+  # Average the eq.8 denominator only over the frames that enter the loss ([18:189)). Counting the GT
+  #   prefix and the skipped g1 chunk makes it too small and scales every gradient up. Both are logged
+  #   (dmdtrain_normalizer / dmdtrain_normalizer_full).
+  sf_dmd_normalizer_masked: true
+  dmd_last_step_only: false
+  dmd_last_section_grad_only: false
+  dmd_teacher_forcing: false
+  fake_guidance_scale: 0.0
+  real_guidance_scale: 3.0
+  is_amplify_first_chunk: false
+  is_dmd_vae_decode: false
+  is_use_gt_history: false
+
+  # self-forcing rollout (N = 20 sections, fixed)
+  sf_curriculum_enabled: false
+  sf_curriculum_schedule:
+  - - 20
+    - 1
+    - 9999
+  dmd_num_latent_sections_min: 20
+  dmd_num_latent_sections_max: 20
+  rollout_prefix_sections: 1
+  sf_evoke_teacher_front_window: true
+  sf_warp_tail_chunks: 2
+  sf_detach_history_between_chunks: true
+  sf_stage0_stopgrad_front: false
+  sf_return_full_rollout: true
+  sf_recompute_sections: true
+  sf_recompute_top_stages: 2
+  sf_teacher_gt_longmid: false
+  sf_evoke_teacher_shared_host_base: true
+
+  # critic sequence parallel (one SP group = one 8-GPU node, full-window scoring)
+  sf_critic_sp_world_size: 8
+  sf_decouple_rollout: false
+  sf_critic_steps_per_student: 1
+  sf_critic_expected_global_batch_size: 0
+  sf_score_window_chunks: 0
+  sf_score_window_tail_tilt: 0
+  # Critic-only warmup so its Adam moments build up before it steers the student; the student stays
+  #   bit-identical (only its backward/step are skipped). ~5 steps for a warm critic LoRA, 15+ from
+  #   scratch as here. Requires is_train_dmd and dfake_gen_update_ratio: 1.
+  sf_gen_freeze_steps: 15
+
+  # student chunk parallel (mechanism A only: G_p = 8, ulysses off)
+  sf_student_chunk_parallel: true
+  sf_student_sp_ulysses: 1
+  sf_student_cp_diag: true
+
+  # i2v student training: OFF. sf_i2v_prefix_latent_frames is the master switch (0 = the whole i2v
+  #   path is closed); the four keys below only matter once it is >0. This recipe is v2v-only, and the
+  #   data sources are all video, so nothing would take the i2v branch anyway -- the switch is set to 0
+  #   rather than left at 1 so the config states that plainly instead of announcing "i2v path ON" at
+  #   startup while never running a single i2v step. The code path itself is untouched and still works.
+  sf_i2v_prefix_latent_frames: 0
+  sf_i2v_ratio: 0.0
+  sf_i2v_mode_scope: group          # sample the mode per SP group, so a group always agrees
+  sf_i2v_hist_latent_mode: static_repeat   # history 1x slot = VAE(image x 33)[-1:], matching i2v inference
+  sf_i2v_score_g1: false            # whether i2v steps let DMD gradients through the g1 chunk
+
+  # geometric state regularizer
+  sf_geo_reg_weight: 0.2
+  sf_geo_reg_every_k: 3
+  sf_geo_reg_t_min: 1
+  sf_geo_reg_t_max: 999

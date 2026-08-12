@@ -1,0 +1,1 @@
+{"name": "mountain_valley", "video_path": "examples/v2v/clip.mp4", "pose_path": "examples/v2v/pose.npz", "prompt_path": "examples/v2v/caption.json", "pose_type": "vipe", "video_fps": 30.0}
