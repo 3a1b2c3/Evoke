@@ -21,6 +21,13 @@
   and keeps going — 1.5 s of video every 2.11 s on a single H200.</b>
 </p>
 
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=2CGx1WCC3zA">
+    <img src="assets/promo.jpg" width="640" alt="Watch the EVOKE overview on YouTube">
+  </a>
+  <br><sub><a href="https://www.youtube.com/watch?v=2CGx1WCC3zA">▶ Watch the 1-minute overview</a></sub>
+</p>
+
 ## ✨ Highlights
 
 - 🏆 **State of the art on WBench** — as a *three-step* world model, while staying competitive in
