@@ -231,14 +231,9 @@ swallows it).
 
 ## 👍 Acknowledgement
 
-This codebase is a derivative of **[Helios](https://github.com/PKU-YuanGroup/Helios)** —
-`models/evoke-base` holds the vae / text encoder / tokenizer / scheduler from its released base, and
-the pipeline, transformer and scheduler modules carry the original copyright notices alongside ours.
-Helios in turn builds on **Wan**, which is where those components originate. Thanks also to
-**[lingbot-world](https://github.com/robbyant/lingbot-world)**.
-
-Warp-as-history conditioning — rendering observed content into the target view and selecting history
-tokens by a visibility mask — follows prior work; we adopt it and claim none of it.
+The EVOKE teacher is built on **[LingBot-World](https://github.com/robbyant/lingbot-world)**. The
+vae / text encoder / tokenizer / scheduler in `models/evoke-base` come from the released
+**[Helios](https://github.com/PKU-YuanGroup/Helios)** base, which traces them to **Wan**.
 
 ## 🔒 License
 
