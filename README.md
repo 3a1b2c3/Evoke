@@ -39,11 +39,11 @@
 ## 🎬 Demos
 
 <p align="center">
-  <a href="https://www.youtube.com/watch?v=2CGx1WCC3zA">
+  <a href="https://www.youtube.com/watch?v=_hhhqZYEUck">
     <img src="assets/promo.jpg" width="100%" alt="Watch the EVOKE overview on YouTube">
   </a>
   <br>
-  <sub><a href="https://www.youtube.com/watch?v=2CGx1WCC3zA"><b>▶&nbsp; Watch the 1-minute overview</b></a></sub>
+  <sub><a href="https://www.youtube.com/watch?v=_hhhqZYEUck"><b>▶&nbsp; Watch the overview</b></a></sub>
 </p>
 
 Every clip was produced by the launchers in this repo, on the data bundled in `examples/` — no external
