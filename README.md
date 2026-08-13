@@ -3,7 +3,7 @@
     <source media="(prefers-color-scheme: dark)" srcset="examples/logo/logo_dark.png">
     <img src="examples/logo/logo_light.png" width="38" alt="">
   </picture></sub>&nbsp;&nbsp;&nbsp;
-  Alaya-EVOKE: Endless Interactive World with<br>Bounded State and Long-Horizon Supervision
+  Alaya-EVOKE: From Linear-Scaling Supervision to Endless World
 </h1>
 
 <p align="center">
@@ -246,7 +246,7 @@ Apache-2.0, see `LICENSE`. Vendored third-party code keeps its own license and p
 
 ```bibtex
 @article{evoke2026,
-  title = {Alaya-EVOKE: Endless Interactive World with Bounded State and Long-Horizon Supervision},
+  title = {Alaya-EVOKE: From Linear-Scaling Supervision to Endless World},
   year  = {2026},
 }
 ```
