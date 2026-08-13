@@ -1,3 +1,6 @@
+# Copyright (c) 2025 Kling Team, Kuaishou Technology.
+# Licensed under the MIT License; see LICENSE in this directory.
+# Derived from https://github.com/KlingAIResearch/VideoAlign
 # from training.train_utils import get_peft_state_maybe_zero_3, get_peft_state_non_lora_maybe_zero_3
 from typing import List, Optional
 

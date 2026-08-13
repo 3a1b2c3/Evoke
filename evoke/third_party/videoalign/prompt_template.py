@@ -1,3 +1,6 @@
+# Copyright (c) 2025 Kling Team, Kuaishou Technology.
+# Licensed under the MIT License; see LICENSE in this directory.
+# Derived from https://github.com/KlingAIResearch/VideoAlign
 VIDEOSCORE_QUERY_PROMPT = """
 Suppose you are an expert in judging and evaluating the quality of AI-generated videos,
 please watch the frames of a given video and see the text prompt for generating the video,

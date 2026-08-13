@@ -509,7 +509,7 @@ class DA3FrameBank:
         #   WARNING: the direction is the [opposite] of standard Mahalanobis: in this domain the poisoning (blue flood / render surfaces seen through walls) has collapsed DA3 conf (~1-3, flat / over-saturated) and is a [systematic error]
         #   rather than unbiased noise -> low conf must [tighten] (->tau_lo) to block it; high conf is trustworthy new real geometry (a new building round the corner) -> [loosen] (->tau_hi) to avoid salt-and-pepper.
         #   per-pixel tau = tau_lo + (tau_hi-tau_lo)*clamp(conf/conf_ref, 0, 1); large deviations (>tau_hi*d_cloud) are always deleted (wall / flood).
-        #   WARNING: tau_lo=0.20 = the DLC-validated safe floor (lo=0.10 pushes late low-conf whole frames down to tau_eff~0.12 = the over-deletion zone -> coverage collapses -> blur);
+        #   WARNING: tau_lo=0.20 = the validated safe floor (lo=0.10 pushes late low-conf whole frames down to tau_eff~0.12 = the over-deletion zone -> coverage collapses -> blur);
         # adaptive only loosens [above] that floor (high conf -> tau_hi=0.30 to avoid salt-and-pepper), never below.
         self.consist_adaptive = bool(consist_adaptive)
         self.consist_tau_lo = float(consist_tau_lo)

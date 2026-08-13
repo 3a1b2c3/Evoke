@@ -75,7 +75,7 @@ from evoke.utils.utils_evoke_post import (
     sf_curriculum_lookup,
 )
 from evoke.utils.utils_recycle_batch import get_timesteps
-from evoke.videoalign.inference import VideoVLMRewardInference
+from evoke.third_party.videoalign.inference import VideoVLMRewardInference
 from packaging import version
 from peft import LoraConfig, set_peft_model_state_dict
 from peft.utils import get_peft_model_state_dict
