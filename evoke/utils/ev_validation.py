@@ -115,7 +115,7 @@ def load_pose_for_v2v(
     """Load pose npz, transform intrinsics to target resolution, resample fps. Returns (lingbot_Ks [4], lingbot_c2ws [N,4,4]).
 
     fallback_default_intrinsic: when True and the npz carries no intrinsics/intrinsic/K key
-    (e.g. gameverse, which stores only `data`/`inds`), use a default normalized intrinsic
+    (some store only `data`/`inds`), use a default normalized intrinsic
     [[1,0,0.5],[0,1,0.5],[0,0,1]]. transform_intrinsic_for_crop_resize auto-detects the
     normalized form (all values <= 2) and rescales to source_resolution. Default False keeps
     the sekai/vipe path byte-for-byte unchanged (raises KeyError if no intrinsics, as before).

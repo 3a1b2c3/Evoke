@@ -777,7 +777,7 @@ def materialize_online_batch(
     B, C_pix, T_pix, H_pix, W_pix = raw_video.shape
 
     # ── NOTE: image-only sample -> take the i2v branch (dispatched per **sample**, not drawn by ratio) ──
-    #   the data config mounts both video sources (scene/gameverse/dl3dv, with time) and image sources (vbench2_i2v: jpg -> LoadImage
+    #   the data config mounts both video sources (with time) and image sources (image sources: jpg -> LoadImage
     #   >> ToList -> **1 frame**). image samples cannot supply the num_frames temporal supervision and have no pose => they can only be i2v:
     #   reference image as the condition, student rolls out N sections, teacher scores exactly those N sections. DMD is a distribution-matching loss
     #   (the teacher scores the student rollout, no GT target needed) => image-only samples are **complete** for DMD, they only lose the GT-dependent
@@ -985,8 +985,8 @@ def materialize_online_batch(
     segs_per_sample = batch.get("segment_prompts", [None] * B)
     if segs_per_sample is None:
         segs_per_sample = [None] * B
-    # Skill (grok event/VFX) sample: drop-warp + event-window target. Default OFF → identical to the
-    # original path for every non-skill (scene/gameverse/dl3dv) sample. GEO forces B==1, so is_skill /
+    # Skill (VFX event) sample: drop-warp + event-window target. Default OFF → identical to the
+    # original path for every non-skill sample. GEO forces B==1, so is_skill /
     # event_window arrive as length-B lists; read element 0. event_window is in LOADED-frame (pixel) space.
     _is_skill_raw = batch.get("is_skill", False)
     _is_skill = bool(_is_skill_raw[0]) if isinstance(_is_skill_raw, (list, tuple)) and _is_skill_raw else bool(_is_skill_raw)
@@ -1371,7 +1371,7 @@ def materialize_online_batch(
         # Collect source latents for train_evoke prefix injection.
         geo_source_image_latent = torch.cat(source_latent_list, dim=0).to(dtype=weight_dtype)
 
-    # ── Skill (grok event/VFX): drop warp, keep plucker. We emit a ZERO warp tier with an all-INVISIBLE
+    # ── Skill (VFX event): drop warp, keep plucker. We emit a ZERO warp tier with an all-INVISIBLE
     # mask: the existing short-tier machinery (history_visible_mask_short = [prefix(1) | warp_vis | prev_short(1)])
     # then FILTERS the warp tokens out entirely (filter_history_tokens_by_mask) → short tier collapses to
     # [prefix | prev_short] + real mid/long, exactly the trained warp_token_drop=full layout. The static-pose
@@ -1409,7 +1409,7 @@ def materialize_online_batch(
         # GEO conditioning mode for train loop dispatch; None when GEO is disabled.
         # Skill stays "full_geo" (real mid/long kept); warp is dropped via the zero-visibility tier above.
         "geo_condition_mode": _geo_mode if use_geometric_state else None,
-        # Skill (grok event/VFX) marker — for logging / inference symmetry. Training needs no branch:
+        # Skill (VFX event) marker — for logging / inference symmetry. Training needs no branch:
         # the zero-visibility warp tier already collapses the short tier to [prefix | prev_short].
         "is_skill": _is_skill,
         "uttid": batch.get("uttid", []),

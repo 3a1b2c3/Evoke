@@ -39,7 +39,7 @@ class ResolveCaptionFile(DataProcessingOperator):
         self.segment_text_key = segment_text_key
         self.strip_camera_tags = bool(strip_camera_tags)
         # inline=True: the jsonl carries the caption text directly (no caption file to open),
-        # e.g. grok_v2 whose lines have an `overall_caption` string instead of a `prompt_path`.
+        # sources whose lines carry an `overall_caption` string instead of a `prompt_path`.
         self.inline = inline
 
         # Normalize caption_key to {key: weight} dict.

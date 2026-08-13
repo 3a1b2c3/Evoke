@@ -39,11 +39,6 @@ ablation_*
 cache
 wandb
 output_evoke
-AMT-S.yaml
-bpe_simple_vocab_16e6.txt
-Videoreward
-1_formal_ckpts
-demo_data
 tmp/
 
 # Local model weights & training output (large files, kept out of git)
@@ -64,74 +59,17 @@ core.[0-9]*
 
 # Tool metadata
 .claude/
-.sii/
 
 # Local working conventions (CLAUDE.md and friends): local only, never committed
 CLAUDE.md
 claude.md
 
-# Archived local configs / ablation experiments
-configs/data/bak/
-configs/training/align_abl/
-configs/training/align_abl_the05_nomlp/
-configs/training/rope_abl/
-
-# QZ platform job records (contain job ids, not public)
-qz/
-
-# Offline regression guards and the pytest suite: developer tooling, run before submitting.
 tests/
-# DLC platform job records (job ids, submit scripts, training logs)
-dlc/
-# Local Claude Code config (skills / settings): developer tooling, contains internal
-#   platform ids and paths, not part of the open-source release.
-.claude/
-# Internal benchmark survey notes, not part of the open-source release.
-benchmark/
-# Internal evaluation scripts (VBench etc.), not part of the open-source release.
-#   NOTE: gitignore has no trailing comments -- a comment must be on its own line,
-#   otherwise the whole line is taken as the pattern and silently matches nothing.
-eval/
 
 # Runtime env dump (written by the deepspeed launcher; contains cluster network / credential fragments)
 .deepspeed_env
 
-# Test data (29MB+, synced externally by each developer; symlinks to external data are ignored too)
-example/sekai_game_test/
-example/sekai_real_test/
-example/sekai_game_test_org/
-# Ad-hoc case data staged for manual runs, not part of the released examples.
-example/tmp3/
-# Internal source material and ad-hoc demo sets; only example/formal/ is released.
-example/ours/
-example/ours2/
-example/lingbot_example/
-example/geo_example/
-# Full-sweep case list over the internal sekai dataset (paths need VROOT/AROOT).
-example/sekai_real_personfree_bright256_v2.jsonl
-/example/sekai_game_test
-
-# Reference projects (submodule-like, cloned separately; symlinks ignored as well)
-ref_project/
-/ref_project
-
-# EXP experiment area: track README.md / config.yaml / run.sh, ignore large artifacts.
-EXP/**/outputs/
-EXP/**/logs/
-EXP/**/*.mp4
-EXP/**/*.npz
-# Cloned third-party repos under EXP (have their own .git) — keep out of this repo.
-EXP/**/lingbot-map/
-# Downloaded model weights under EXP.
-EXP/**/weights/
-EXP/**/*.pt
-EXP/**/outputs_*/
-/docs/
-/EXP/
 .efc_*
-ossutil_output/
 
-# Local scratch example sets: working material, not shipped demos (example/formal/* is the demo set)
-/example/tmp/
-/example/tmp2/
-/example/v14pair/
+# Local notes and investigation records, not part of the release.
+docs/

@@ -6,9 +6,9 @@
 # config here asks for (753 in stage3_long_distillation.yaml).
 #
 # This is enough to check that a recipe trains -- it is one clip, so it will overfit immediately and
-# tells you nothing about quality. For a real run point `data_yaml_path` at `mix_4src.yaml` (stage 1/2)
-# or `mix_3src_pose.yaml` / `mix_3src_segprompts.yaml` (stage 3), which carry the production source
-# mix, the per-source path quirks and the tuned sampling ratios.
+# tells you nothing about quality. For a real run, copy this file and point `datasets` at your own
+# sources: each needs a jsonl of clips plus the video / caption / pose directories, and `ratio` sets
+# how often a source is drawn (>=1 repeats it, <1 takes a random subset).
 #
 # caption_key: overall.description -- the whole-clip prompt. Use sample_segprompts.yaml for the
 # segmented-prompt variant that stage3_long_distillation.yaml needs.

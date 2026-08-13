@@ -3,7 +3,7 @@
     <source media="(prefers-color-scheme: dark)" srcset="examples/logo/logo_dark.png">
     <img src="examples/logo/logo_light.png" width="38" alt="">
   </picture></sub>&nbsp;&nbsp;&nbsp;
-  EVOKE: Endless Interactive World with<br>Bounded State and Long-Horizon Supervision
+  Alaya-EVOKE: Endless Interactive World with<br>Bounded State and Long-Horizon Supervision
 </h1>
 
 <p align="center">
@@ -41,14 +41,6 @@
 Every clip was produced by the launchers in this repo, on the data bundled in `examples/` — no external
 dataset, no cherry-picking across seeds. The `Move` / `Rot` joystick is the camera-control HUD burned
 into `geo_pred.mp4`.
-
-<!-- The demos are GIFs so they render straight from the repo, with no upload step and no dependency on
-     GitHub's CDN (they also survive mirrors and offline clones). To upgrade them to real HTML5 players
-     once the repo is public: drag the corresponding output/**/geo_pred.mp4 into any issue or PR comment
-     box on a PUBLIC repo, copy the https://github.com/user-attachments/assets/<uuid> URL GitHub
-     inserts, discard the comment without posting, and replace the <img> with
-     <video src="<uuid-url>" controls width="300"></video>. Assets uploaded from a private repo are
-     access-controlled and will not render for anonymous visitors. -->
 
 ### Re-prompting mid-rollout
 
@@ -259,7 +251,7 @@ Apache-2.0, see `LICENSE`. Vendored third-party code keeps its own license and p
 
 ```bibtex
 @article{evoke2026,
-  title = {EVOKE: Endless Interactive World with Bounded State and Long-Horizon Supervision},
+  title = {Alaya-EVOKE: Endless Interactive World with Bounded State and Long-Horizon Supervision},
   year  = {2026},
 }
 ```

@@ -456,7 +456,7 @@ def parse_args(argv=None):
                    help="source video resolution [H, W] for pose npz")
     p.add_argument("--lingbot_pose_type", type=str, default="vipe", choices=["vipe", "raw"])
     p.add_argument("--lingbot_fallback_default_intrinsic", action="store_true", default=False,
-                   help="when the pose npz has no intrinsics/intrinsic/K key (e.g. gameverse, "
+                   help="when the pose npz has no intrinsics/intrinsic/K key ("
                         "which stores only data/inds), use a default normalized intrinsic. "
                         "Default OFF → sekai/vipe path unchanged.")
     # Per-chunk trajectory cap (limits camera motion so warp stays in-distribution). 0 = off.

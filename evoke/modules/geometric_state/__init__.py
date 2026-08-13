@@ -20,13 +20,6 @@ from .camera_warp import (
     render_pi3x_camera_warp,
 )
 
-# Pipeline import is optional; camera_warp and defaults remain usable if pipeline deps are missing.
-try:
-    from .pipeline import WarpAsHistoryPipeline, WarpAsHistoryPipelineOutput  # noqa: F401
-except ImportError:
-    WarpAsHistoryPipeline = None  # type: ignore[assignment]
-    WarpAsHistoryPipelineOutput = None  # type: ignore[assignment]
-
 __all__ = [
     "Pi3XWarpRenderer",
     "Pi3XWarpRendererConfig",
@@ -42,8 +35,6 @@ __all__ = [
     "GEO_PYRAMID_NUM_STAGES",
     "GEO_PYRAMID_STEPS",
     "GEO_VISIBLE_TOKEN_THRESHOLD",
-    "WarpAsHistoryPipeline",
-    "WarpAsHistoryPipelineOutput",
     "default_pi3_repo",
     "default_pi3x_ckpt",
     "render_pi3x_camera_warp",

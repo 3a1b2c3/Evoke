@@ -1190,8 +1190,7 @@ def inference_with_trajectory_stage2(
         if prefix_latents is not None:
             # i2v step: the tail of history holds the **static-repeat last latent** (= fake_image_latents at inference,
             #   the continuation distribution), while the x0 anchor (image_latents, below) still takes the single-frame I-frame latent prefix_latents[:, :, 0:1]
-            #   => aligns one-for-one with the two slots of `infer_evoke.py --sample_type i2v` (pipeline_evoke_diffusers.py,
-            #   :1292-1308). None (v2v / mode=iframe) -> use the original prefix, byte-identical.
+            #   => aligns one-for-one with the two slots of the i2v inference path. None (v2v / mode=iframe) -> use the original prefix, byte-identical.
             _hist_tail = prefix_latents if sf_i2v_hist_latent is None else sf_i2v_hist_latent
             assert _hist_tail.shape[2] == prefix_latents.shape[2], (
                 f"[LW-I2V] sf_i2v_hist_latent frame count ({_hist_tail.shape[2]}) must match prefix"

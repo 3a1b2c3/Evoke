@@ -111,7 +111,7 @@ class BucketedFeatureDataset(Dataset):
         if "lingbot_Ks" in data and "lingbot_c2ws" in data:
             out["lingbot_Ks"] = torch.as_tensor(data["lingbot_Ks"], dtype=torch.float32)    # [4]
             out["lingbot_c2ws"] = torch.as_tensor(data["lingbot_c2ws"], dtype=torch.float32) # [N_pix, 4, 4]
-        # Skill (grok event/VFX) sample: drop-warp + event-window target. event_window is in
+        # Skill (VFX event) sample: drop-warp + event-window target. event_window is in
         # LOADED-frame (pixel) positions; None when the loaded window missed the event.
         if data.get("__skill__"):
             out["is_skill"] = True

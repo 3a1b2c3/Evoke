@@ -13,7 +13,7 @@ data_config:
   use_stage1_dataset: true
   use_stage3_dataset: false
   use_multi_dataset: true
-  data_yaml_path: configs/data/sample.yaml   # bundled single-clip sample; swap in configs/data/mix_4src.yaml for a real run
+  data_yaml_path: configs/data/sample.yaml   # bundled single-clip sample; point at your own source mix for a real run
   use_shuffle: true
   pin_memory: true
   persistent_workers: false

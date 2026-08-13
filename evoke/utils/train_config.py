@@ -474,8 +474,7 @@ class WarpAsHistoryConfig:
     lora_target_modules: str = field(default="to_q,to_k,to_v")
     # Pi3X renderer checkpoint path
     pi3x_ckpt_path: Optional[str] = field(default=None)
-    # [DEPRECATED — ignored by code] The only reader is WarpAsHistoryPipeline, which is never
-    # instantiated anywhere in the repo. The live visibility filter is visible_token_threshold below,
+    # [DEPRECATED — ignored by code] The live visibility filter is visible_token_threshold below,
     # which the active paths read directly. Kept as a no-op; do NOT add it to new configs.
     visible_token_drop: bool = field(default=True)
     # Visibility filter for warp tokens.
@@ -1774,13 +1773,13 @@ def validate_sf10s_evoke_teacher_config(args) -> None:
         assert not bool(tc.is_smoothness_loss) and not bool(tc.is_dmd_vae_decode), \
             "[LW-I2V] requires is_smoothness_loss=false and is_dmd_vae_decode=false (both contain a hard %win==0 assert)"
         # precondition ⑤ : the i2v history mid/long **stay all-zero** (k=0 all zero, k=1 partly zero, k>=2 real latents),
-        #   matching the i2v inference layout of `pipeline_evoke_diffusers` frame by frame (history_latents = [zeros(18)|fake_image_latents]).
+        #   matching the i2v inference layout frame by frame (history_latents = [zeros(18)|fake_image_latents]).
         #   but geo_invisible_history_noise=true makes **inference** replace the all-zero mid/long with sigma_inv*randn
         #   (pipeline_evoke.py:_geo_maybe_noise_invisible_history) => train(zero)/infer(noise) mismatch, and silently so.
         #   using that inference path would require changing the training side to noise as well (train_evoke.py, the same formula); explicitly not doing that => blocked here.
         assert not bool(getattr(getattr(mc, "geometric_state", None), "geo_invisible_history_noise", False)), (
             "[LW-I2V] with the i2v path on, geometric_state.geo_invisible_history_noise must be false -- the training-side i2v "
-            "mid/long stay all-zero (matching the i2v inference of pipeline_evoke_diffusers); enabling it makes inference use sigma_inv*randn => train/infer mismatch")
+            "mid/long stay all-zero, matching the i2v inference path; enabling it makes inference use sigma_inv*randn => train/infer mismatch")
         # precondition ⑤b [four-region consistency]: the mode dispatch (_sf_i2v_active / _sf_i2v_hist_latent) is computed **inside** the
         #   `if TRAIN_GENERATOR:` block of train_evoke, while the critic call reads them **outside** it => on critic-only steps (which only exist when ratio>1)
         #   they would take the defaults False/None, so the critic skips the frame-0 replacement while the generator did it -> the teacher input and the critic

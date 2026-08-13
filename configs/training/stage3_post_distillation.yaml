@@ -32,7 +32,7 @@ data_config:
   id_token: ""
   use_stage1_dataset: true
   use_multi_dataset: true
-  data_yaml_path: configs/data/sample.yaml   # bundled single-clip sample; swap in configs/data/mix_3src_pose.yaml for a real run
+  data_yaml_path: configs/data/sample.yaml   # bundled single-clip sample; point at your own source mix for a real run
   num_frames: 141
   target_fps: 24
   use_stage3_dataset: false

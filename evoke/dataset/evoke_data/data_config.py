@@ -264,7 +264,7 @@ def load_data_config(config_path, max_pixels=1024 * 1024, height=None, width=Non
             ])),
         ])
 
-        # Skill (grok event/VFX) source flags: drop-warp training + event-window targeting.
+        # Skill (VFX event) source flags: drop-warp training + event-window targeting.
         skill_source = bool(ds_cfg.get("skill_source", False))
         event_window_keys = ds_cfg.get("event_window_keys", None)
 
@@ -272,7 +272,7 @@ def load_data_config(config_path, max_pixels=1024 * 1024, height=None, width=Non
             caption_dir=ds_cfg.get("caption_dir", ""),
             caption_key=ds_cfg.get("caption_key", "overall_caption"),
             target_fps=global_target_fps,
-            # inline_caption=True: prompt field holds the caption text itself (grok_v2), not a path.
+            # inline_caption=True: prompt field holds the caption text itself, not a path.
             inline=ds_cfg.get("inline_caption", False),
             # Text field of a segmented caption, and whether to strip camera tags; either may be set
             #   in defaults or per dataset. Matching the EvokeTeacher teacher's own training means
@@ -315,7 +315,7 @@ def load_data_config(config_path, max_pixels=1024 * 1024, height=None, width=Non
             target_w=width,
             source_h=source_h,
             source_w=source_w,
-            # Use a default intrinsic when the pose npz has none (gameverse stores only c2w).
+            # Use a default intrinsic when the pose npz has none (some sources store only c2w).
             fallback_default_intrinsic=ds_cfg.get("fallback_default_intrinsic", False),
             event_window_keys=event_window_keys,
             skill_source=skill_source,

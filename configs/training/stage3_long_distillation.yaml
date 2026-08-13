@@ -12,7 +12,7 @@ data_config:
   use_stage1_dataset: true
   use_stage3_dataset: false
   use_multi_dataset: true
-  data_yaml_path: configs/data/sample_segprompts.yaml   # bundled single-clip sample; swap in configs/data/mix_3src_segprompts.yaml for a real run
+  data_yaml_path: configs/data/sample_segprompts.yaml   # bundled single-clip sample; point at your own source mix for a real run
   force_rebuild: true
 
   # clip geometry

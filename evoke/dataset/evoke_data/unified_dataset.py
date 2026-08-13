@@ -26,7 +26,7 @@ def hunyuan_one_hot_to_one_dimension(one_hot):
 
 
 # Default normalized intrinsic for sources whose pose npz carries no intrinsics
-# (e.g. gameverse, whose pose only stores c2w under `data`). fx=fy=1.0 (focal ≈ image
+# (some sources store only c2w under `data`). fx=fy=1.0 (focal ≈ image
 # dimension) with centered principal point.
 _DEFAULT_NORM_INTRINSIC = np.array(
     [[1.0, 0.0, 0.5], [0.0, 1.0, 0.5], [0.0, 0.0, 1.0]], dtype=np.float32
@@ -66,9 +66,9 @@ class UnifiedDataset(torch.utils.data.Dataset):
         self._source_h = source_h
         self._source_w = source_w
         # When True, use a default normalized intrinsic if the pose npz has no intrinsics key
-        # (gameverse stores only c2w); otherwise a missing intrinsic raises (caught by retry).
+        # (some sources store only c2w); otherwise a missing intrinsic raises (caught by retry).
         self.fallback_default_intrinsic = fallback_default_intrinsic
-        # Skill (grok event/VFX) source: drop-warp + event-window targeting. event_window_keys maps
+        # Skill (VFX event) source: drop-warp + event-window targeting. event_window_keys maps
         # {"start": <jsonl key>, "end": <jsonl key>} (source-frame indices); video_loader is the
         # LoadVideo instance whose event_hint we set per-sample to bias the loaded window onto the event.
         self.event_window_keys = event_window_keys
@@ -168,7 +168,7 @@ class UnifiedDataset(torch.utils.data.Dataset):
         data = np.load(pose_path, allow_pickle=True)
 
         # Intrinsic: accept intrinsics / intrinsic / K, with an optional default for sources
-        # whose pose npz carries no intrinsics (gameverse). Default is already normalized.
+        # whose pose npz carries no intrinsics. Default is already normalized.
         intrinsic_is_default = False
         if "intrinsics" in data:
             intrinsics_all = data["intrinsics"]  # [N, 3, 3] or [3, 3]
@@ -229,7 +229,7 @@ class UnifiedDataset(torch.utils.data.Dataset):
         data = np.load(pose_path, allow_pickle=True)
 
         # Intrinsic: accept intrinsics / intrinsic / K, with an optional default for sources
-        # whose pose npz carries no intrinsics (gameverse). Default is already normalized;
+        # whose pose npz carries no intrinsics. Default is already normalized;
         # transform_intrinsic_for_crop_resize auto-detects it (values <= 2) and rescales.
         if "intrinsics" in data:
             intrinsics_all = data["intrinsics"]  # [N, 3, 3] or [3, 3]
