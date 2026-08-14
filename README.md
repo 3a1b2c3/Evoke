@@ -7,6 +7,13 @@
 </h1>
 
 <p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="examples/logo/alaya-lab-horizontal-light.svg">
+    <img src="examples/logo/alaya-lab-horizontal-dark.svg" width="152" alt="Alaya Lab">
+  </picture>
+</p>
+
+<p align="center">
   <a href="https://evoke-world.github.io/Evoke/"><img src="https://img.shields.io/badge/🌐_Project_Page-evoke--world.github.io-1a73e8.svg" alt="Project Page"></a>
   <a href="#"><img src="https://img.shields.io/badge/arXiv-coming_soon-b31b1b.svg" alt="arXiv"></a>
   <a href="https://huggingface.co/SII-YuanyangYin/Evoke"><img src="https://img.shields.io/badge/🤗_Weights-SII--YuanyangYin/Evoke-ffce1c.svg" alt="Weights"></a>
