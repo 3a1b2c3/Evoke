@@ -15,13 +15,10 @@
 
 <p align="center">
   <a href="https://evoke-world.github.io/Evoke/"><img src="https://img.shields.io/badge/🌐_Project_Page-evoke--world.github.io-1a73e8.svg" alt="Project Page"></a>
-  <a href="#"><img src="https://img.shields.io/badge/arXiv-coming_soon-b31b1b.svg" alt="arXiv"></a>
+  <a href="https://arxiv.org/abs/2608.13546"><img src="https://img.shields.io/badge/arXiv-2608.13546-b31b1b.svg" alt="arXiv"></a>
   <a href="https://huggingface.co/SII-YuanyangYin/Evoke"><img src="https://img.shields.io/badge/🤗_Weights-SII--YuanyangYin/Evoke-ffce1c.svg" alt="Weights"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License"></a>
 </p>
-
-<!-- TODO(release): the arXiv badge above is a placeholder -- swap href="#" for the abs/ URL and
-     change "coming_soon" to the eprint id once the preprint is public. Same for the bibtex below. -->
 
 <p align="center">
   <b>A three-step, CFG-free world model that remembers where it has been, takes direction mid-flight,<br>
@@ -257,11 +254,14 @@ Apache-2.0, see `LICENSE`. Vendored third-party code keeps its own license and p
 
 ## ✏️ Citation
 
-<!-- TODO(release): fill in the arXiv eprint id once the preprint is public. -->
-
 ```bibtex
-@article{evoke2026,
-  title = {Alaya-EVOKE: From Linear-Scaling Supervision to Endless World},
-  year  = {2026},
+@misc{evoke2026,
+  title         = {Alaya-EVOKE: From Linear-Scaling Supervision to Endless World},
+  author        = {Yuanyang Yin and Gongxuan Wang and Yifan Zhan and Chuanhao Li and Kaipeng Zhang and Feng Zhao},
+  year          = {2026},
+  eprint        = {2608.13546},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CV},
+  url           = {https://arxiv.org/abs/2608.13546},
 }
 ```
