@@ -16,7 +16,7 @@
 <p align="center">
   <a href="https://evoke-world.github.io/Evoke/"><img src="https://img.shields.io/badge/🌐_Project_Page-evoke--world.github.io-1a73e8.svg" alt="Project Page"></a>
   <a href="https://arxiv.org/abs/2608.13546"><img src="https://img.shields.io/badge/arXiv-2608.13546-b31b1b.svg" alt="arXiv"></a>
-  <a href="https://huggingface.co/SII-YuanyangYin/Evoke"><img src="https://img.shields.io/badge/🤗_Weights-SII--YuanyangYin/Evoke-ffce1c.svg" alt="Weights"></a>
+  <a href="https://huggingface.co/AlayaLab/Evoke"><img src="https://img.shields.io/badge/🤗_Weights-AlayaLab/Evoke-ffce1c.svg" alt="Weights"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License"></a>
 </p>
 
@@ -149,6 +149,7 @@ Everything goes under `models/` (gitignored). Every released EVOKE directory is 
 
 ```
 models/
+├── model_index.json                              a map of this layout -- not a loadable pipeline
 ├── evoke-base/                                   vae / text_encoder / tokenizer / scheduler only
 ├── ViGeo1.1/vigeo.pt                             depth backend -- REQUIRED
 ├── DA3/{config.json,model.safetensors}           depth backend -- OPTIONAL
@@ -162,7 +163,7 @@ models/
 
 ```bash
 # EVOKE -- the four released models, the teacher, and the base components
-hf download SII-YuanyangYin/Evoke --local-dir models
+hf download AlayaLab/Evoke --local-dir models
 
 # ViGeo -- REQUIRED. The depth backend behind the world state bank; every shipped
 # recipe uses it (DEPTH_BACKEND=vigeo, cloud_warp.backend: vigeo).
