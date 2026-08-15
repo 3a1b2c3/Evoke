@@ -162,11 +162,11 @@ models/
 
 ```bash
 # EVOKE -- the four released models, the teacher, and the base components
-huggingface-cli download SII-YuanyangYin/Evoke --local-dir models
+hf download SII-YuanyangYin/Evoke --local-dir models
 
 # ViGeo -- REQUIRED. The depth backend behind the world state bank; every shipped
 # recipe uses it (DEPTH_BACKEND=vigeo, cloud_warp.backend: vigeo).
-huggingface-cli download pkqbajng/ViGeo --local-dir models/ViGeo1.1
+hf download pkqbajng/ViGeo --local-dir models/ViGeo1.1
 ```
 
 **Depth-Anything-3 is optional** — nothing in the default path touches it, and you only need it if you
