@@ -1301,6 +1301,11 @@ class EvokeTransformer3DModel(
 
         self.gradient_checkpointing = False
 
+    @classmethod
+    def from_pretrained(cls, pretrained_model_name_or_path, **kwargs):
+        kwargs.pop("max_memory", None)
+        return super().from_pretrained(pretrained_model_name_or_path, **kwargs)
+
     @torch.no_grad()
     def initialize_weight_from_another_conv3d(self, another_layer):
         weight = another_layer.weight.detach().clone()

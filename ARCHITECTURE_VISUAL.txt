@@ -1,0 +1,189 @@
+================================================================================
+                    EVOKE INFERENCE ARCHITECTURE
+================================================================================
+
+USER INPUT LAYER
+├─ run_examples.bat
+├─ run_examples_python.py
+└─ CLI arguments (mode, num_chunks, etc.)
+           ↓
+================================================================================
+                         INFERENCE PIPELINE
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      EvokePipeline (diffusers)                         │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  [1] PREPARE CONDITIONING                                              │
+│  ├─ Text Encoder (from evoke-base)                                     │
+│  │   └─ Tokenizer → CLIP embeddings (77 tokens × 768 dim)              │
+│  ├─ Image/Video Loading (if i2v/v2v mode)                             │
+│  └─ Camera Pose Extraction                                             │
+│                                                                         │
+│  [2] STREAMING CHUNK GENERATION (3-step diffusion)                     │
+│  ├─ FOR chunk_idx in range(NUM_CHUNKS):                                │
+│  │                                                                     │
+│  │  [2a] Read World State Bank                                         │
+│  │  ├─ Query geometry by camera pose                                   │
+│  │  ├─ Retrieve previous depth maps                                    │
+│  │  └─ Render into current view (warp)                                 │
+│  │                                                                     │
+│  │  [2b] Denoise Loop (3 steps, no CFG)                                │
+│  │  ├─ FOR step in [1, 2, 3]:                                          │
+│  │  │   ├─ Input: noise(t) + conditioning                              │
+│  │  │   ├─ Transformer3DModel (DiT, 16.26B params)                     │
+│  │  │   │   ├─ Self-attention (with KV cache)                          │
+│  │  │   │   ├─ Cross-attention (conditioning)                          │
+│  │  │   │   └─ FFN blocks                                              │
+│  │  │   └─ Output: denoised_latent(t)                                  │
+│  │  └─ KV Cache: stores attention keys/values from step 1              │
+│  │      (reused in steps 2-3 for efficiency)                           │
+│  │                                                                     │
+│  │  [2c] Decode Latents                                                │
+│  │  ├─ VAE Decoder (from evoke-base)                                   │
+│  │  ├─ latent (4 × 48 × 80) → frames (3 × 384 × 640)                   │
+│  │  └─ 36 frames per chunk (1.5s @ 24fps)                              │
+│  │                                                                     │
+│  │  [2d] Update World State Bank                                       │
+│  │  ├─ Estimate depth (ViGeo 1.1)                                      │
+│  │  │   └─ Monocular depth: 36 frames → depth maps                     │
+│  │  ├─ Unproject into 3D (camera intrinsics)                           │
+│  │  ├─ Add to point cloud                                              │
+│  │  └─ Index by camera pose + timestamp                                │
+│  │                                                                     │
+│  │  [2e] Video Encoding & Yield                                        │
+│  │  ├─ H.264 encode: 36 frames → chunk.mp4                             │
+│  │  └─ Write to disk                                                   │
+│  │                                                                     │
+│  └─ LOOP ENDS (memory freed, ready for next chunk)                     │
+│                                                                         │
+│  [3] FINAL VIDEO ASSEMBLY                                              │
+│  └─ Concatenate all chunks → output.mp4                                │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+           ↓
+================================================================================
+                          COMPUTATION LAYER
+================================================================================
+
+GPU (RTX 5090, sm_120, 32GB VRAM)
+├─ Models (resident):
+│  ├─ DiT weights: 14 GB
+│  ├─ Text encoder: 1 GB
+│  └─ VAE: 0.5 GB
+├─ Per-chunk runtime:
+│  ├─ KV cache: 2.5 GB
+│  ├─ Activations: 1 GB
+│  └─ Intermediate: 1 GB
+└─ Total per chunk: ~20 GB (bounded)
+
+Tensor Operations:
+├─ Attention: Flash-Attention 2.8.3 (FA2)
+├─ Kernels: Triton-Windows 3.3.0
+├─ Backend: CUDA 13.0
+└─ Precision: bfloat16 (memory efficient)
+
+================================================================================
+                          DATA LAYER
+================================================================================
+
+HuggingFace Cache (~26 GB total)
+└─ ~/.cache/huggingface/hub/
+   ├─ models--SII-YuanyangYin--Evoke/
+   │  ├─ evoke-base/
+   │  │  ├─ vae_model.safetensors (512M)
+   │  │  ├─ text_encoder/ (1.2GB)
+   │  │  ├─ tokenizer/ (8MB)
+   │  │  └─ scheduler/ (1MB)
+   │  └─ evoke/stage3_post_distillation/
+   │     ├─ diffusion_pytorch_model.safetensors (14GB)
+   │     ├─ config.json
+   │     └─ model_index.json
+   └─ models--pkqbajng--ViGeo/
+      └─ vigeo.pt (2 GB)
+
+Local Outputs (variable)
+└─ outputs/
+   ├─ t2v/geo_pred.mp4
+   ├─ i2v/geo_pred.mp4
+   ├─ v2v/geo_pred.mp4
+   └─ segment/geo_pred.mp4
+
+================================================================================
+                     INFERENCE MODES (CONDITIONING)
+================================================================================
+
+T2V (Text-to-Video)
+┌─────────────────────────────┐
+│ Input: prompt text          │
+│ Camera: Free (generated)    │
+│ Output: 9.5s video @ 24fps  │
+└─────────────────────────────┘
+
+I2V (Image-to-Video)
+┌─────────────────────────────┐
+│ Input: frame + pose track   │
+│ Camera: Constrained         │
+│ Output: continuation video  │
+└─────────────────────────────┘
+
+V2V (Video-to-Video)
+┌─────────────────────────────┐
+│ Input: video + pose track   │
+│ Camera: Constrained         │
+│ Output: re-rendered video   │
+└─────────────────────────────┘
+
+SEGMENT (Re-prompt Mid-Flight)
+┌─────────────────────────────┐
+│ Input: prompt schedule      │
+│ Camera: Continuous          │
+│ Output: scene transition    │
+│ (no cut, no restart)        │
+└─────────────────────────────┘
+
+================================================================================
+                        MEMORY TIMELINE
+================================================================================
+
+Time 0ms:     Model Load
+              ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ 15.5 GB (peak during init)
+
+Time 100ms:   Chunk 0 Generation
+              ████████████████████ 20 GB
+              (models 15.5 + KV cache 2.5 + activations 2 GB)
+
+Time 2100ms:  Chunk 0 → Chunk 1
+              ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ 20 GB (cache freed, recreated)
+
+Time 4200ms:  Chunk 1 → Chunk 2
+              ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ 20 GB (repeats)
+
+[Bounded memory = no OOM for long sessions]
+
+================================================================================
+                     PERFORMANCE PROFILE
+================================================================================
+
+Latency per chunk:
+  Load model:              ~100ms (one-time)
+  Encode text:             ~50ms
+  3-step diffusion:        ~1800ms
+  VAE decode:              ~100ms
+  Depth estimate (ViGeo):  ~50ms
+  Total per chunk:         ~2100ms = 2.11s
+
+Throughput:
+  Input:  1.5s video
+  Output: 1.5s video
+  Per chunk: 2.11s → 0.71× realtime
+  For 30s video: ~6.3s per chunk × 20 chunks ≈ 2 minutes
+
+Quality:
+  Resolution: 384×640
+  Framerate: 24fps
+  Precision: bfloat16 (no quality loss vs fp32)
+  Attention: Flash-Attention 2 (numerically stable)
+
+================================================================================
