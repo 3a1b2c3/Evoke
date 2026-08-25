@@ -27,38 +27,59 @@ fi
 echo "Using uv: $UV_EXE"
 echo ""
 
-# Install PyTorch (CUDA 12.8)
+# Install PyTorch (CUDA 12.8) FIRST, before flash-attn
 echo "Installing PyTorch (CUDA 12.8)..."
 "$UV_EXE" pip install --upgrade pip setuptools wheel
 "$UV_EXE" pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
 
-# Install requirements (--no-build-isolation so flash-attn can find torch)
+# Detect platform
 echo ""
-echo "Installing all requirements..."
-if [ -f requirements_windows.txt ]; then
-    # Windows requirements file exists, use it
-    "$UV_EXE" pip install -r requirements_windows.txt --no-build-isolation
-elif [ -f requirements.txt ]; then
-    # Fall back to generic requirements
-    "$UV_EXE" pip install -r requirements.txt --no-build-isolation
+if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
+    REQUIREMENTS_FILE="requirements-windows.txt"
+    PLATFORM="Windows"
 else
-    echo "WARNING: No requirements.txt found"
+    REQUIREMENTS_FILE="requirements-linux.txt"
+    PLATFORM="Linux/WSL"
 fi
 
-# Install flash-attn (architecture-specific wheel)
+echo "Platform: $PLATFORM"
+echo ""
+
+# Install base + platform-specific requirements (flash-attn will fail, install it separately after)
+echo "Installing requirements..."
+if [ -f "$REQUIREMENTS_FILE" ]; then
+    echo "Using: $REQUIREMENTS_FILE"
+    # Install everything except flash-attn first (it needs torch + build tools)
+    # Ignore flash-attn build failures for now
+    "$UV_EXE" pip install -r "$REQUIREMENTS_FILE" --no-build-isolation || echo "WARNING: Some packages failed (expected if flash-attn couldn't build)"
+elif [ -f requirements.txt ]; then
+    echo "WARNING: Platform-specific file not found, using requirements.txt"
+    "$UV_EXE" pip install -r requirements.txt --no-build-isolation || echo "WARNING: Some packages failed"
+else
+    echo "ERROR: No requirements files found"
+    exit 1
+fi
+
+# Install flash-attn (architecture-specific wheel) - AFTER torch is installed
 echo ""
 echo "Installing flash-attn (matched to torch/CUDA/Python)..."
 
-TORCH_MM=$(python -c "import torch; t=torch.__version__.split('+')[0]; print('.'.join(t.split('.')[:2]))")
-CUDA_TAG=$(python -c "import torch; print(torch.version.cuda.replace('.',''))" 2>/dev/null || echo "130")
-PY_TAG=$(python -c "import sys; print(f'cp{sys.version_info[0]}{sys.version_info[1]}')")
+TORCH_MM=$(python -c "import torch; t=torch.__version__.split('+')[0]; print('.'.join(t.split('.')[:2]))" 2>/dev/null || echo "2.1")
+CUDA_TAG=$(python -c "import torch; print(torch.version.cuda.replace('.',''))" 2>/dev/null || echo "128")
+PY_TAG=$(python -c "import sys; print(f'cp{sys.version_info[0]}{sys.version_info[1]}')" 2>/dev/null || echo "cp311")
 
 echo "  Torch: $TORCH_MM | CUDA: cu$CUDA_TAG | Python: $PY_TAG"
 
-# Try to find matching flash-attn wheel
-FLASH_ATTN_URL=""
-if command -v curl &> /dev/null; then
-    FLASH_ATTN_URL=$(python -c "
+# Try pip install first (may find pre-built wheel in PyPI cache)
+if pip install flash-attn>=2.5.0 2>/dev/null; then
+    echo "  ✓ flash-attn installed from PyPI"
+else
+    echo "  WARNING: Failed to install flash-attn from PyPI"
+    echo "  Attempting to find pre-built wheel..."
+
+    FLASH_ATTN_URL=""
+    if command -v curl &> /dev/null; then
+        FLASH_ATTN_URL=$(python -c "
 import json, urllib.request
 try:
     data=json.load(urllib.request.urlopen('https://api.github.com/repos/mjun0812/flash-attention-prebuild-wheels/releases?per_page=100'))
@@ -68,14 +89,15 @@ try:
 except:
     print('')
 " 2>/dev/null || echo "")
-fi
+    fi
 
-if [ -z "$FLASH_ATTN_URL" ]; then
-    echo "  WARNING: No matching flash-attn wheel found for cu${CUDA_TAG}/torch${TORCH_MM}/${PY_TAG}"
-    echo "  Skipping flash-attn (sageattention will still be used)"
-else
-    echo "  Found: $FLASH_ATTN_URL"
-    "$UV_EXE" pip install "$FLASH_ATTN_URL"
+    if [ -n "$FLASH_ATTN_URL" ]; then
+        echo "  Found pre-built wheel: $FLASH_ATTN_URL"
+        pip install "$FLASH_ATTN_URL" 2>/dev/null || echo "  ⚠ Could not install pre-built wheel"
+    else
+        echo "  ✗ No pre-built wheel found for cu${CUDA_TAG}/torch${TORCH_MM}/${PY_TAG}"
+        echo "  flash-attn is optional - sageattention will be used instead"
+    fi
 fi
 
 # Verify installation

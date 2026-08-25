@@ -13,7 +13,9 @@ huggingface-hub>=0.19.0
 peft>=0.4.0
 
 # Attention & kernels
-flash-attn>=2.5.0
+# flash-attn is installed separately in setup_evoke.sh (after torch, with pre-built wheel)
+# Uncomment below to build from source if needed:
+# flash-attn>=2.5.0
 
 # Data & processing
 numpy>=2.0.0

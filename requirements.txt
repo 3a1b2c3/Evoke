@@ -1,4 +1,12 @@
-# Evoke Inference Requirements (CUDA 12.8/13.0 compatible)
+# Evoke Inference Requirements
+#
+# Platform-specific:
+#   - Windows:   pip install --index-url https://download.pytorch.org/whl/cu128 -r requirements-windows.txt
+#   - Linux/WSL: pip install --index-url https://download.pytorch.org/whl/cu128 -r requirements-linux.txt
+#
+# For backward compatibility, this file includes Windows packages.
+# Use requirements-windows.txt or requirements-linux.txt for clean platform-specific installs.
+
 --index-url https://download.pytorch.org/whl/cu128
 --extra-index-url https://pypi.org/simple
 
@@ -27,7 +35,6 @@ imageio>=2.30.0
 imageio-ffmpeg>=0.4.0
 
 # Text processing
-transformers>=4.38.0
 sentencepiece>=0.2.0
 regex>=2024.0.0
 ftfy>=6.0.0
@@ -37,4 +44,7 @@ packaging>=24.0
 tqdm>=4.60.0
 requests>=2.25.0
 pyyaml>=5.1
-triton-windows>=3.0.0
+
+# Platform-specific (use appropriate requirements-*.txt file instead)
+triton-windows>=3.0.0; sys_platform == 'win32'
+triton>=3.0.0; sys_platform == 'linux'
