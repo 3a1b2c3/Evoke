@@ -27,20 +27,20 @@ fi
 echo "Using uv: $UV_EXE"
 echo ""
 
-# Install PyTorch (CUDA 13.0)
-echo "Installing PyTorch (CUDA 13.0)..."
+# Install PyTorch (CUDA 12.8)
+echo "Installing PyTorch (CUDA 12.8)..."
 "$UV_EXE" pip install --upgrade pip setuptools wheel
-"$UV_EXE" pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
+"$UV_EXE" pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
 
-# Install requirements
+# Install requirements (--no-build-isolation so flash-attn can find torch)
 echo ""
 echo "Installing all requirements..."
 if [ -f requirements_windows.txt ]; then
     # Windows requirements file exists, use it
-    "$UV_EXE" pip install -r requirements_windows.txt
+    "$UV_EXE" pip install -r requirements_windows.txt --no-build-isolation
 elif [ -f requirements.txt ]; then
     # Fall back to generic requirements
-    "$UV_EXE" pip install -r requirements.txt
+    "$UV_EXE" pip install -r requirements.txt --no-build-isolation
 else
     echo "WARNING: No requirements.txt found"
 fi
