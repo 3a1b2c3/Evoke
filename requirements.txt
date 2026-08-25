@@ -11,7 +11,6 @@ peft>=0.4.0
 
 # Attention & kernels
 flash-attn>=2.5.0
-triton-windows>=3.0.0
 
 # Data & processing
 numpy>=2.0.0
@@ -33,3 +32,4 @@ packaging>=24.0
 tqdm>=4.60.0
 requests>=2.25.0
 pyyaml>=5.1
+triton-windows>=3.0.0
