@@ -1,5 +1,7 @@
 # Evoke Inference Requirements (CUDA 12.8/13.0 compatible)
-# Install with: pip install -r requirements.txt --index-url https://download.pytorch.org/whl/cu128
+--index-url https://download.pytorch.org/whl/cu128
+--extra-index-url https://pypi.org/simple
+
 torch>=2.1.0
 torchvision>=0.16.0
 torchaudio>=2.1.0
