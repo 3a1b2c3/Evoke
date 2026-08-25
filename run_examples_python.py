@@ -32,6 +32,14 @@ STAGE2_STAGE_RANGE = [0.0, 1 / 3, 2 / 3, 1.0]
 STAGE2_STEPS = [1, 1, 1]
 GUIDANCE_SCALE = 1.0  # CFG off; distillation removed the need for it
 
+# The rollout advances one chunk per window_num_frames = (latent_window_size-1)*vae_temporal+1
+# frames -- with latent_window_size=9 and Wan's temporal factor 4 that's 33 frames/chunk. A prompt
+# schedule that switches at start_chunk 3 therefore does NOTHING unless the clip runs >=4 chunks, so
+# for segment_prompts cases we size num_frames to the schedule's last switch plus a tail of chunks
+# that actually show the post-switch scene.
+CHUNK_FRAMES = 33
+SEGMENT_TAIL_CHUNKS = 3  # chunks rendered AFTER the last prompt switch (so the transition is visible)
+
 # Patch from_pretrained to strip max_memory before calling parent
 _orig_from_pretrained = ModelMixin.from_pretrained.__func__
 @classmethod
@@ -42,11 +50,20 @@ def _patched_from_pretrained(cls, *args, **kwargs):
 EvokeTransformer3DModel.from_pretrained = _patched_from_pretrained
 
 
-def _load_case(evoke_dir, case_dir):
-    """Read the shipped examples/<case_dir>/cases.jsonl row (the repo's real inference examples)."""
+def _load_case(evoke_dir, case_dir, name=None):
+    """Read an examples/<case_dir>/cases.jsonl row (the repo's real inference examples).
+
+    Defaults to the first row. Pass `name` to select a specific case by its "name" field --
+    e.g. segment_prompts/cases.jsonl stacks 4 cases (aurora/meteor/crystalstorm/gateway)."""
     cases_path = evoke_dir / "examples" / case_dir / "cases.jsonl"
     with open(cases_path) as f:
-        return json.loads(f.readline())
+        rows = [json.loads(line) for line in f if line.strip()]
+    if name is not None:
+        for row in rows:
+            if row.get("name") == name:
+                return row
+        raise ValueError(f"case '{name}' not found in {cases_path}")
+    return rows[0]
 
 
 def _load_prompt(evoke_dir, case):
@@ -109,30 +126,51 @@ def _gpu_stats(label):
         print(f"  [gpu:{label}] nvidia-smi query failed: {e}")
 
 
-def run_inference(pipeline, engine_mode, case_dir=None, num_frames=25, output_dir="outputs", height=256, width=448,
-                   image_noise_sigma_min=0.02, image_noise_sigma_max=0.05):
+def run_inference(pipeline, engine_mode, case_dir=None, case_name=None, num_frames=25, output_dir="outputs",
+                   height=256, width=448, image_noise_sigma_min=0.02, image_noise_sigma_max=0.05):
     """Run Evoke inference in `engine_mode` (t2v/i2v/v2v) using examples/<case_dir>/cases.jsonl.
 
     case_dir defaults to engine_mode (the repo's own examples/{t2v,i2v,v2v}/ layout), but can point
     at any directory with a compatible cases.jsonl -- e.g. examples/racer or examples/2, which are
     i2v-shaped cases living outside the repo's own examples/i2v/.
 
+    case_name selects a specific row by "name" when the cases.jsonl stacks several (segment_prompts);
+    output then goes to outputs/<case_dir>/<case_name>/ so the four cases don't overwrite each other.
+
     image_noise_sigma_min/max: pipeline defaults are 0.111/0.135; lower keeps the model anchored
     closer to the seed-image pixels instead of drifting toward the text prompt.
     """
     case_dir = case_dir or engine_mode
-    output_dir = Path(output_dir) / case_dir
+    out_sub = f"{case_dir}/{case_name}" if case_name else case_dir
+    output_dir = Path(output_dir) / out_sub
     output_dir.mkdir(parents=True, exist_ok=True)
 
     pred_path = output_dir / "geo_pred.mp4"
     if pred_path.exists():
-        print(f"\n[Evoke] Case: {case_dir} -- skip (already exists: {pred_path})")
+        print(f"\n[Evoke] Case: {out_sub} -- skip (already exists: {pred_path})")
         return True
 
-    case = _load_case(evoke_dir, case_dir)
+    case = _load_case(evoke_dir, case_dir, case_name)
     prompt = _load_prompt(evoke_dir, case)
 
-    print(f"\n[Evoke] Mode: {engine_mode}, Case: {case_dir}, Frames: {num_frames}, Resolution: {height}x{width}")
+    # Per-chunk prompt schedule: segment_prompts cases ship a schedule_<name>.json
+    # ([{start_chunk, prompt}, ...]). The pipeline switches prompt_embeds at each start_chunk
+    # (pipeline_evoke.py:2019-2037,2412-2415) -- WITHOUT this the clip renders one static prompt
+    # and the scene never transitions (why geo_pred_hud.mp4 looked like it "did nothing").
+    chunk_prompts = None
+    seg_path = case.get("segment_prompts_path")
+    if seg_path:
+        with open(evoke_dir / seg_path) as f:
+            _sched = json.load(f)
+        chunk_prompts = {int(e["start_chunk"]): e["prompt"] for e in _sched}
+        # Grow the clip so the schedule can actually reach its last switch AND show it: run up to
+        # (last switch chunk + tail) chunks. Never shrink an explicitly larger caller request.
+        need_chunks = max(chunk_prompts) + 1 + SEGMENT_TAIL_CHUNKS
+        num_frames = max(num_frames, need_chunks * CHUNK_FRAMES)
+        print(f"  Segment schedule: {len(_sched)} prompt(s), switch at chunks {sorted(chunk_prompts)} "
+              f"-> {need_chunks} chunks / {num_frames} frames")
+
+    print(f"\n[Evoke] Mode: {engine_mode}, Case: {out_sub}, Frames: {num_frames}, Resolution: {height}x{width}")
     print(f"  Case: {case['name']}")
     print(f"  Prompt: {prompt}")
 
@@ -147,6 +185,8 @@ def run_inference(pipeline, engine_mode, case_dir=None, num_frames=25, output_di
         image_noise_sigma_min=image_noise_sigma_min,
         image_noise_sigma_max=image_noise_sigma_max,
     )
+    if chunk_prompts:
+        kwargs["chunk_prompts"] = chunk_prompts
 
     lingbot_Ks = lingbot_c2ws = None
     if engine_mode == "i2v":
@@ -287,15 +327,22 @@ def main():
     pipeline.enable_model_cpu_offload()
     _gpu_stats("post-load")
 
-    # (engine_mode, case_dir) -- engine_mode picks the pipeline branch, case_dir picks examples/<dir>/cases.jsonl
+    # (engine_mode, case_dir, case_name) -- engine_mode picks the pipeline branch, case_dir picks
+    # examples/<dir>/cases.jsonl, case_name selects one stacked row (None = first row).
+    # All 4 segment_prompts cases now run, each with its schedule_<name>.json prompt schedule
+    # applied via chunk_prompts (aurora tundra->aurora, meteor, crystalstorm, gateway transitions).
     runs = [
-        ("i2v", "i2v"),
-        ("v2v", "v2v"),
-        ("i2v", "racer"),
-        ("i2v", "2"),
+        ("i2v", "i2v", None),
+        ("v2v", "v2v", None),
+        ("i2v", "racer", None),
+        ("i2v", "2", None),
+        ("i2v", "segment_prompts", "aurora"),
+        ("i2v", "segment_prompts", "meteor"),
+        ("i2v", "segment_prompts", "crystalstorm"),
+        ("i2v", "segment_prompts", "gateway"),
     ]
 
-    for engine_mode, case_dir in runs:
+    for engine_mode, case_dir, case_name in runs:
         try:
             # 33 = Evoke's own hard minimum: (latent_window_size-1)*4+1 (v2v's reference-video
             # encode errors below this; i2v silently rounds up, so use the same floor everywhere).
@@ -308,11 +355,11 @@ def main():
                 # 256x448) instead, since that raises every pyramid stage's absolute resolution.
                 kwargs["height"] = 384
                 kwargs["width"] = 640
-            success = run_inference(pipeline, engine_mode, case_dir, **kwargs)
+            success = run_inference(pipeline, engine_mode, case_dir, case_name=case_name, **kwargs)
             if not success:
-                print(f"  Failed: {case_dir}")
+                print(f"  Failed: {case_dir}{('/' + case_name) if case_name else ''}")
         except Exception as e:
-            print(f"  Error ({case_dir}): {e}")
+            print(f"  Error ({case_dir}{('/' + case_name) if case_name else ''}): {e}")
             import traceback
             traceback.print_exc()
 
