@@ -1,4 +1,5 @@
 *.py[cod]
+.venv/
 *.gif
 !assets/demo/*.gif
 *.bmp

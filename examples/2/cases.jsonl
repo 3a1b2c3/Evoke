@@ -1,0 +1,1 @@
+{"name": "gta_briefcase_man", "image_path": "examples/2/image.png", "pose_path": "examples/2/pose.npz", "prompt_path": "examples/2/prompt.txt", "pose_fps": 24, "pose_source_resolution": [704, 1280], "pose_type": "vipe"}

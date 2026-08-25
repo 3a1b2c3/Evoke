@@ -1,0 +1,12 @@
+[
+  {
+    "at": 0.25,
+    "label": "CAR CRASH",
+    "prompt": "Style: Photorealistic GTA-style open-world game. Ahead on the street a speeding car loses control and crashes, smashing into another vehicle in a violent collision with crumpling metal, shattering glass, smoke and debris flying across the road. The suited man keeps a tight grip on his briefcase in his hand and does not drop it, holding onto the briefcase the whole time as he walks toward the wreck. Third-person camera behind the man."
+  },
+  {
+    "at": 0.8,
+    "label": "LEAVE BRIEFCASE",
+    "prompt": "Style: Photorealistic GTA-style open-world game. The man in the suit sets his briefcase down on the ground on the sidewalk and, leaving it behind on the ground, keeps walking forward down the street without stopping. Third-person camera behind the man."
+  }
+]

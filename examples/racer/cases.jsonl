@@ -1,0 +1,1 @@
+{"name": "racer_rc_car", "image_path": "examples/racer/Screenshot.png", "pose_path": "examples/racer/pose.npz", "prompt_path": "examples/racer/prompt.txt", "pose_fps": 30, "pose_source_resolution": [461, 764], "pose_type": "vipe"}

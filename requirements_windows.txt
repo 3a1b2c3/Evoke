@@ -8,13 +8,24 @@ safetensors>=0.4.0
 huggingface-hub>=0.19.0
 peft>=0.4.0
 
+# Attention & kernels (Windows)
+# triton-windows is the Windows drop-in for triton; required by sageattention/torch.compile
+triton-windows>=3.0.0
+sageattention>=1.0.6
+kernels>=0.4.0
+# flash-attn has no Windows PyPI wheel; installed separately in setup_evoke.bat
+# from the mjun0812 prebuild repo, matched to the installed torch/CUDA/Python triple
+
 numpy>=2.0.0
+pandas>=2.0.0
+scipy>=1.10.0
 pillow>=10.0.0
 opencv-python-headless>=4.8.0
 einops>=0.8.0
 omegaconf>=2.3.0
 imageio>=2.30.0
 imageio-ffmpeg>=0.4.0
+video-reader-rs>=0.4.0
 
 sentencepiece>=0.2.0
 regex>=2024.0.0
