@@ -1,0 +1,1 @@
+{"dataset_name": "sample", "video_path": "walking_tour_60s.mp4", "pose_path": "walking_tour_60s.npz", "prompt_path": "walking_tour_60s.json", "start_sec": 0, "end_sec": 60.0, "pose_type": "vipe", "video_fps": 30.0}
