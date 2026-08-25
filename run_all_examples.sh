@@ -21,66 +21,60 @@ source .venv/bin/activate
 echo "✓ Activated .venv"
 echo ""
 
-echo "Processing all examples/ subfolders..."
-echo ""
-
 shopt -s nullglob
 
 total=0
 success=0
-output_root="./outputs/examples_$(date +%s)"
-mkdir -p "$output_root"
+failed=0
 
 for subfolder in examples/*/; do
     [ -d "$subfolder" ] || continue
     subfolder_name="$(basename "$subfolder")"
 
-    # Skip empty or non-relevant folders
-    if ! find "$subfolder" -maxdepth 1 -type f \( -name "*.mp4" -o -name "*.jpg" -o -name "*.png" \) 2>/dev/null | grep -q .; then
+    # Skip if no media files
+    if ! find "$subfolder" -maxdepth 1 -type f \( -name "*.mp4" -o -name "*.webm" -o -name "*.jpg" -o -name "*.png" \) 2>/dev/null | grep -q .; then
         continue
     fi
 
-    echo "[$((++total))] Processing: $subfolder_name"
+    total=$((total + 1))
+    echo "[$total] $subfolder_name"
 
-    output_dir="$output_root/$subfolder_name"
-    mkdir -p "$output_dir"
+    # Run i2v for images
+    for image in "$subfolder"*.jpg "$subfolder"*.png; do
+        [ -f "$image" ] || continue
+        image_name="$(basename "$image")"
+        echo "  → $image_name (i2v)"
 
-    # Process videos in subfolder
-    for video in "$subfolder"*.mp4 "$subfolder"*.webm; do
-        [ -f "$video" ] || continue
-        video_name="$(basename "$video" | sed 's/\.[^.]*$//')"
-        output_file="$output_dir/${video_name}_output.mp4"
-
-        echo "  → $video_name (v2v)"
-        if MODE=v2v NUM_CHUNKS=6 bash scripts/inference/infer_post_distill.sh \
-            --video "$video" --prompt "enhance quality" --output "$output_file"; then
-            size=$(du -h "$output_file" | cut -f1)
-            echo "    ✓ ($size)"
+        if MODE=i2v NUM_CHUNKS=6 bash scripts/inference/infer_post_distill.sh \
+            jsonl="examples/${subfolder_name}/cases.jsonl" max_cases=999 2>&1 | tail -5; then
             success=$((success + 1))
+        else
+            failed=$((failed + 1))
         fi
     done
 
-    # Process images in subfolder
-    for image in "$subfolder"*.jpg "$subfolder"*.png; do
-        [ -f "$image" ] || continue
-        image_name="$(basename "$image" | sed 's/\.[^.]*$//')"
-        output_file="$output_dir/${image_name}_i2v.mp4"
+    # Run v2v for videos
+    for video in "$subfolder"*.mp4 "$subfolder"*.webm; do
+        [ -f "$video" ] || continue
+        video_name="$(basename "$video")"
+        echo "  → $video_name (v2v)"
 
-        echo "  → $image_name (i2v)"
-        if MODE=i2v NUM_CHUNKS=6 bash scripts/inference/infer_post_distill.sh \
-            --image "$image" --output "$output_file"; then
-            size=$(du -h "$output_file" | cut -f1)
-            echo "    ✓ ($size)"
+        if MODE=v2v NUM_CHUNKS=6 bash scripts/inference/infer_post_distill.sh \
+            jsonl="examples/${subfolder_name}/cases.jsonl" max_cases=999 2>&1 | tail -5; then
             success=$((success + 1))
+        else
+            failed=$((failed + 1))
         fi
     done
 done
 
 echo ""
 echo "================================================================================"
-echo "Complete"
+echo "Summary"
 echo "================================================================================"
+echo "Total examples: $total"
+echo "Success:       $success"
+echo "Failed:        $failed"
 echo ""
-echo "Summary: $success outputs generated"
-echo "Location: $output_root"
+echo "Outputs: output_evoke/infer/*"
 echo ""
