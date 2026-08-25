@@ -1,0 +1,16 @@
+# Evoke Inference Requirements - Linux/WSL (CUDA 12.8/13.0)
+# Install with: pip install --index-url https://download.pytorch.org/whl/cu128 -r requirements-linux.txt
+
+--index-url https://download.pytorch.org/whl/cu128
+--extra-index-url https://pypi.org/simple
+
+# PyTorch (Linux)
+torch>=2.1.0
+torchvision>=0.16.0
+torchaudio>=2.1.0
+
+# Linux-specific: regular triton (cross-platform, not Windows-only)
+triton>=3.0.0
+
+# Include base requirements
+-r requirements-base.txt

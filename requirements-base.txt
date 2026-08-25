@@ -1,0 +1,36 @@
+# Evoke Inference Requirements - Base (platform-agnostic)
+# Use requirements-windows.txt or requirements-linux.txt for platform-specific installs
+
+# PyTorch (use CUDA 12.8/13.0 index)
+# Install via: pip install --index-url https://download.pytorch.org/whl/cu128 torch torchvision torchaudio
+
+# Core ML stack (inference only)
+transformers>=4.38.0
+diffusers>=0.28.0
+accelerate>=0.24.0
+safetensors>=0.4.0
+huggingface-hub>=0.19.0
+peft>=0.4.0
+
+# Attention & kernels
+flash-attn>=2.5.0
+
+# Data & processing
+numpy>=2.0.0
+pillow>=10.0.0
+opencv-python-headless>=4.8.0
+einops>=0.8.0
+omegaconf>=2.3.0
+imageio>=2.30.0
+imageio-ffmpeg>=0.4.0
+
+# Text processing
+sentencepiece>=0.2.0
+regex>=2024.0.0
+ftfy>=6.0.0
+
+# Utilities
+packaging>=24.0
+tqdm>=4.60.0
+requests>=2.25.0
+pyyaml>=5.1
