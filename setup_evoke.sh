@@ -30,9 +30,10 @@ echo ""
 # Install PyTorch (CUDA 12.8) FIRST, before flash-attn
 echo "Installing PyTorch (CUDA 12.8)..."
 "$UV_EXE" pip install --upgrade pip setuptools wheel
-"$UV_EXE" pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+"$UV_EXE" pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu128
 
 # Detect platform
+# (platform detection moved before FFmpeg installation)
 echo ""
 if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
     REQUIREMENTS_FILE="requirements-windows.txt"
@@ -43,6 +44,35 @@ else
 fi
 
 echo "Platform: $PLATFORM"
+echo ""
+
+# Install FFmpeg (required for torchvision VideoReader)
+echo "Installing FFmpeg (required for video support)..."
+if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
+    echo "  Windows detected - ensure FFmpeg is in PATH"
+    echo "  Download from: https://ffmpeg.org/download.html"
+    if ! command -v ffmpeg &> /dev/null; then
+        echo "  WARNING: ffmpeg not found in PATH. VideoReader will fail."
+        echo "  Install FFmpeg and add to PATH, then rerun setup."
+    else
+        echo "  ✓ FFmpeg found"
+    fi
+else
+    echo "  Linux/WSL detected - installing FFmpeg..."
+    sudo apt-get update && sudo apt-get install -y ffmpeg libsm6 libxext6 2>/dev/null || echo "  WARNING: apt-get failed (may need sudo)"
+fi
+echo ""
+
+# Rebuild torchvision with FFmpeg support (AFTER torch is installed)
+echo "Rebuilding torchvision with FFmpeg support..."
+pip uninstall torchvision -y 2>/dev/null || true
+if "$UV_EXE" pip install torchvision --no-binary torchvision --index-url https://download.pytorch.org/whl/cu128 2>&1 | tee -a /tmp/torchvision_build.log; then
+    echo "  ✓ torchvision rebuilt with FFmpeg"
+else
+    echo "  WARNING: torchvision build may have failed (check /tmp/torchvision_build.log)"
+    echo "  Falling back to pre-built wheel..."
+    "$UV_EXE" pip install torchvision --index-url https://download.pytorch.org/whl/cu128
+fi
 echo ""
 
 # Install base + platform-specific requirements (flash-attn will fail, install it separately after)
@@ -103,15 +133,22 @@ fi
 # Verify installation
 echo ""
 echo "Verifying..."
-if python -c "import torch; import transformers; import diffusers; print('✓ All imports OK')" 2>/dev/null; then
-    echo ""
-    echo "================================================================================"
-    echo "READY"
-    echo "================================================================================"
-    echo ""
-    echo "Run: python run_examples_python.py"
-    echo ""
+if python -c "import torch; import transformers; import diffusers; print('✓ Imports OK')" 2>/dev/null; then
+    if python -c "from torchvision.io import VideoReader; print('✓ VideoReader (FFmpeg) OK')" 2>/dev/null; then
+        echo ""
+        echo "================================================================================"
+        echo "✅ READY - VideoReader with FFmpeg support enabled"
+        echo "================================================================================"
+        echo ""
+        echo "Run: python run_examples_python.py"
+        echo ""
+    else
+        echo "⚠ WARNING: VideoReader not available (FFmpeg support missing)"
+        echo "  Ensure FFmpeg is installed and torchvision was rebuilt from source"
+        echo "  Rerun: bash setup_evoke.sh"
+        exit 1
+    fi
 else
-    echo "WARNING: Verification failed - some packages may be missing"
+    echo "⚠ WARNING: Verification failed - some packages may be missing"
     exit 1
 fi
