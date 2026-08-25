@@ -24,6 +24,8 @@ echo ""
 echo "Processing all examples/ subfolders..."
 echo ""
 
+shopt -s nullglob
+
 total=0
 success=0
 output_root="./outputs/examples_$(date +%s)"
@@ -34,7 +36,9 @@ for subfolder in examples/*/; do
     subfolder_name="$(basename "$subfolder")"
 
     # Skip empty or non-relevant folders
-    [ -n "$(find "$subfolder" -maxdepth 1 -type f \( -name "*.mp4" -o -name "*.jpg" -o -name "*.png" \) 2>/dev/null)" ] || continue
+    if ! find "$subfolder" -maxdepth 1 -type f \( -name "*.mp4" -o -name "*.jpg" -o -name "*.png" \) 2>/dev/null | grep -q .; then
+        continue
+    fi
 
     echo "[$((++total))] Processing: $subfolder_name"
 
@@ -42,30 +46,30 @@ for subfolder in examples/*/; do
     mkdir -p "$output_dir"
 
     # Process videos in subfolder
-    for video in "$subfolder"*.mp4 "$subfolder"*.webm 2>/dev/null; do
+    for video in "$subfolder"*.mp4 "$subfolder"*.webm; do
         [ -f "$video" ] || continue
         video_name="$(basename "$video" | sed 's/\.[^.]*$//')"
         output_file="$output_dir/${video_name}_output.mp4"
 
         echo "  → $video_name (v2v)"
         if MODE=v2v NUM_CHUNKS=6 bash scripts/inference/infer_post_distill.sh \
-            --video "$video" --prompt "enhance quality" --output "$output_file" 2>/dev/null; then
-            size=$(du -h "$output_file" 2>/dev/null | cut -f1)
+            --video "$video" --prompt "enhance quality" --output "$output_file"; then
+            size=$(du -h "$output_file" | cut -f1)
             echo "    ✓ ($size)"
             success=$((success + 1))
         fi
     done
 
     # Process images in subfolder
-    for image in "$subfolder"*.jpg "$subfolder"*.png 2>/dev/null; do
+    for image in "$subfolder"*.jpg "$subfolder"*.png; do
         [ -f "$image" ] || continue
         image_name="$(basename "$image" | sed 's/\.[^.]*$//')"
         output_file="$output_dir/${image_name}_i2v.mp4"
 
         echo "  → $image_name (i2v)"
         if MODE=i2v NUM_CHUNKS=6 bash scripts/inference/infer_post_distill.sh \
-            --image "$image" --output "$output_file" 2>/dev/null; then
-            size=$(du -h "$output_file" 2>/dev/null | cut -f1)
+            --image "$image" --output "$output_file"; then
+            size=$(du -h "$output_file" | cut -f1)
             echo "    ✓ ($size)"
             success=$((success + 1))
         fi
