@@ -14,9 +14,9 @@ mkdir -p "$MODELS_DIR"
 echo "Models directory: $MODELS_DIR"
 echo ""
 
-# Check huggingface-cli
-if ! command -v huggingface-cli &> /dev/null; then
-    echo "⚠️  huggingface-cli not found. Installing huggingface-hub..."
+# Check hf CLI
+if ! command -v hf &> /dev/null; then
+    echo "⚠️  hf CLI not found. Installing huggingface-hub..."
     pip install huggingface-hub
 fi
 
@@ -39,7 +39,7 @@ echo "Status:      REQUIRED"
 echo "Description: VAE, text encoder, tokenizer, scheduler, and all model stages"
 echo ""
 
-CMD="huggingface-cli download SII-YuanyangYin/Evoke --local-dir $MODELS_DIR"
+CMD="hf download SII-YuanyangYin/Evoke --repo-type model --local-dir $MODELS_DIR"
 echo "[Download] Downloading EVOKE Models..."
 echo "  Command: $CMD"
 echo ""
@@ -60,7 +60,7 @@ echo "Status:      REQUIRED"
 echo "Description: REQUIRED: Depth estimation for world state bank"
 echo ""
 
-CMD="huggingface-cli download pkqbajng/ViGeo --local-dir $MODELS_DIR/ViGeo1.1"
+CMD="hf download pkqbajng/ViGeo --repo-type model --local-dir $MODELS_DIR/ViGeo1.1"
 echo "[Download] Downloading ViGeo Depth Backend..."
 echo "  Command: $CMD"
 echo ""
@@ -83,7 +83,7 @@ echo ""
 
 read -p "Download this optional model? (y/n, default n): " -r response
 if [[ "$response" =~ ^[Yy]$ ]]; then
-    CMD="huggingface-cli download depth-anything/Depth-Anything-3 --local-dir $MODELS_DIR/DA3"
+    CMD="hf download depth-anything/Depth-Anything-3 --repo-type model --local-dir $MODELS_DIR/DA3"
     echo "[Download] Downloading Depth-Anything-3..."
     echo "  Command: $CMD"
     echo ""
