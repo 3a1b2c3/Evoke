@@ -292,7 +292,6 @@ def main():
     snapshots = list(evoke_model_path.glob("*"))
 
     # DEBUG: Show what we're looking for
-    import os
     print(f"\n=== EVOKE MODEL DEBUG ===")
     print(f"HF_HOME: {os.environ.get('HF_HOME', 'not set')}")
     print(f"HF_CACHE: {hf_cache}")
