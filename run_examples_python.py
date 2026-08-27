@@ -290,8 +290,21 @@ def main():
     # local snapshot's evoke-base subfolder instead of trying the direct load first.
     evoke_model_path = hf_cache / "models--SII-YuanyangYin--Evoke" / "snapshots"
     snapshots = list(evoke_model_path.glob("*"))
+
+    # DEBUG: Show what we're looking for
+    import os
+    print(f"\n=== EVOKE MODEL DEBUG ===")
+    print(f"HF_HOME: {os.environ.get('HF_HOME', 'not set')}")
+    print(f"HF_CACHE: {hf_cache}")
+    print(f"Looking in: {evoke_model_path}")
+    print(f"Path exists: {evoke_model_path.exists()}")
+    print(f"Snapshots found: {len(snapshots)}")
+    if snapshots:
+        print(f"First snapshot: {snapshots[0]}")
+    print(f"========================\n")
+
     if not snapshots:
-        raise RuntimeError("No Evoke model snapshots found")
+        raise RuntimeError(f"No Evoke model snapshots found in {evoke_model_path}")
     ckpt_path = snapshots[0] / "evoke-base"
 
     # VAE must stay fp32 -- Wan-style VAEs are numerically unstable in fp16, which was producing
