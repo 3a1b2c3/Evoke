@@ -93,7 +93,30 @@ run_example() {
     ls -lh "$example_dir" | grep -v "^total" | awk '{print "    " $9}' | head -10
 
     echo ""
-    echo -e "${BLUE}Ready to run${NC}"
+    echo -e "${BLUE}Running inference (1920x1080)...${NC}"
+    echo ""
+
+    # Run Evoke inference
+    if [ -n "$INPUT_IMAGE" ]; then
+        $PYTHON run_examples_python.py \
+            --input_image "$INPUT_IMAGE" \
+            --prompt "$PROMPT" \
+            --output_dir "$OUTPUT_DIR" \
+            --width 1920 \
+            --height 1080
+
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}✅ Inference complete${NC}"
+            echo "  Output: $OUTPUT_DIR"
+            ls -lh "$OUTPUT_DIR" | tail -5
+        else
+            echo -e "${RED}❌ Inference failed${NC}"
+            return 1
+        fi
+    else
+        echo -e "${YELLOW}⚠ No input image found, skipping inference${NC}"
+    fi
+
     echo ""
 }
 
