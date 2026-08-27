@@ -1,9 +1,12 @@
 #!/bin/bash
 set -e
 
+export CUDA_VERSION=13.2
+export TORCH_CUDA_ARCH_LIST=sm_90,sm_89,sm_80
+
 echo ""
 echo "================================================================================"
-echo "EVOKE - Model Downloader"
+echo "EVOKE - Model Downloader (CUDA 13.2)"
 echo "================================================================================"
 echo ""
 
