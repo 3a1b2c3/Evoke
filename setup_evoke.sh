@@ -27,10 +27,10 @@ fi
 echo "Using uv: $UV_EXE"
 echo ""
 
-# Install PyTorch (CUDA 12.8) FIRST, before flash-attn
-echo "Installing PyTorch (CUDA 12.8)..."
+# Install PyTorch (CUDA 13.2) FIRST, before flash-attn
+echo "Installing PyTorch (CUDA 13.2)..."
 "$UV_EXE" pip install --upgrade pip setuptools wheel
-"$UV_EXE" pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu128
+"$UV_EXE" pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu132
 
 # Detect platform
 # (platform detection moved before FFmpeg installation)
@@ -66,12 +66,12 @@ echo ""
 # Rebuild torchvision with FFmpeg support (AFTER torch is installed)
 echo "Rebuilding torchvision with FFmpeg support..."
 pip uninstall torchvision -y 2>/dev/null || true
-if "$UV_EXE" pip install torchvision --no-binary torchvision --index-url https://download.pytorch.org/whl/cu128 2>&1 | tee -a /tmp/torchvision_build.log; then
+if "$UV_EXE" pip install torchvision --no-binary torchvision --index-url https://download.pytorch.org/whl/cu132 2>&1 | tee -a /tmp/torchvision_build.log; then
     echo "  ✓ torchvision rebuilt with FFmpeg"
 else
     echo "  WARNING: torchvision build may have failed (check /tmp/torchvision_build.log)"
     echo "  Falling back to pre-built wheel..."
-    "$UV_EXE" pip install torchvision --index-url https://download.pytorch.org/whl/cu128
+    "$UV_EXE" pip install torchvision --index-url https://download.pytorch.org/whl/cu132
 fi
 echo ""
 
