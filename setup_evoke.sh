@@ -13,24 +13,22 @@ if ! command -v python &> /dev/null; then
     exit 1
 fi
 
-# Find uv executable
-if command -v uv &> /dev/null; then
-    UV_EXE="uv"
+# Create venv if needed
+echo "Setting up virtual environment..."
+if [ -d ".venv" ]; then
+    echo "  Using existing venv"
 else
-    UV_EXE="${HOME}/.local/bin/uv"
-    if [ ! -f "$UV_EXE" ]; then
-        echo "ERROR: uv not found. Install with: pip install uv"
-        exit 1
-    fi
+    echo "  Creating new venv..."
+    python3 -m venv .venv
 fi
-
-echo "Using uv: $UV_EXE"
+source .venv/bin/activate
+echo "  ✓ venv activated"
 echo ""
 
 # Install PyTorch (CUDA 13.2) FIRST, before flash-attn
 echo "Installing PyTorch (CUDA 13.2)..."
-"$UV_EXE" pip install --upgrade pip setuptools wheel
-"$UV_EXE" pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu132
+pip install --upgrade pip setuptools wheel
+pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu132
 
 # Detect platform
 # (platform detection moved before FFmpeg installation)
@@ -66,12 +64,12 @@ echo ""
 # Rebuild torchvision with FFmpeg support (AFTER torch is installed)
 echo "Rebuilding torchvision with FFmpeg support..."
 pip uninstall torchvision -y 2>/dev/null || true
-if "$UV_EXE" pip install torchvision --no-binary torchvision --index-url https://download.pytorch.org/whl/cu132 2>&1 | tee -a /tmp/torchvision_build.log; then
+if pip install torchvision --no-binary torchvision --index-url https://download.pytorch.org/whl/cu132 2>&1 | tee -a /tmp/torchvision_build.log; then
     echo "  ✓ torchvision rebuilt with FFmpeg"
 else
     echo "  WARNING: torchvision build may have failed (check /tmp/torchvision_build.log)"
     echo "  Falling back to pre-built wheel..."
-    "$UV_EXE" pip install torchvision --index-url https://download.pytorch.org/whl/cu132
+    pip install torchvision --index-url https://download.pytorch.org/whl/cu132
 fi
 echo ""
 
@@ -81,10 +79,10 @@ if [ -f "$REQUIREMENTS_FILE" ]; then
     echo "Using: $REQUIREMENTS_FILE"
     # Install everything except flash-attn first (it needs torch + build tools)
     # Ignore flash-attn build failures for now
-    "$UV_EXE" pip install -r "$REQUIREMENTS_FILE" --no-build-isolation || echo "WARNING: Some packages failed (expected if flash-attn couldn't build)"
+    pip install -r "$REQUIREMENTS_FILE" --no-build-isolation || echo "WARNING: Some packages failed (expected if flash-attn couldn't build)"
 elif [ -f requirements.txt ]; then
     echo "WARNING: Platform-specific file not found, using requirements.txt"
-    "$UV_EXE" pip install -r requirements.txt --no-build-isolation || echo "WARNING: Some packages failed"
+    pip install -r requirements.txt --no-build-isolation || echo "WARNING: Some packages failed"
 else
     echo "ERROR: No requirements files found"
     exit 1
